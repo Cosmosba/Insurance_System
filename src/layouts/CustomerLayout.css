@@ -1,0 +1,332 @@
+/* ── Layout shell ────────────────────────────────────── */
+.cl-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--color-bg-light);
+}
+
+/* ── Mobile top bar ──────────────────────────────────── */
+.cl-topbar {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  padding: 0 16px;
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-border);
+  z-index: 200;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.cl-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 7px;
+  color: var(--color-charcoal);
+  flex-shrink: 0;
+}
+
+.cl-menu-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.cl-topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-charcoal);
+}
+
+.cl-topbar-favicon {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  border-radius: 5px;
+}
+
+/* ── Overlay ─────────────────────────────────────────── */
+.cl-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 149;
+}
+
+/* ── Sidebar ─────────────────────────────────────────── */
+.cl-sidebar {
+  width: var(--color-sidebar-width);
+  min-height: 100vh;
+  background: var(--color-white);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 150;
+}
+
+/* ── Brand area ──────────────────────────────────────── */
+.cl-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 16px 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cl-brand-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.cl-brand-text {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-charcoal);
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+}
+
+.cl-brand-text span {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-primary);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.cl-close-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 4px;
+  color: var(--color-text-muted);
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.cl-close-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Nav ─────────────────────────────────────────────── */
+.cl-nav {
+  flex: 1;
+  padding: 16px 12px;
+  overflow-y: auto;
+}
+
+.cl-nav-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  padding: 0 8px;
+  margin-bottom: 6px;
+}
+
+.cl-nav ul {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cl-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.cl-nav-item:hover {
+  background: var(--color-bg-light);
+  color: var(--color-charcoal);
+}
+
+.cl-nav-item:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.cl-nav-item--active {
+  background: #eef4d6;
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+
+.cl-nav-item--active .cl-nav-icon {
+  color: var(--color-primary);
+}
+
+.cl-nav-icon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.cl-nav-item:hover .cl-nav-icon {
+  color: var(--color-charcoal);
+}
+
+/* ── Sidebar footer ──────────────────────────────────── */
+.cl-sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cl-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--color-bg-light);
+}
+
+.cl-profile-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  overflow: hidden;
+}
+
+.cl-profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.cl-profile-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cl-profile-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-charcoal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cl-profile-email {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cl-signout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.cl-signout-btn:hover {
+  background: #fdf0ee;
+  color: #c0392b;
+  border-color: #f5c6c0;
+}
+
+.cl-signout-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Main content ────────────────────────────────────── */
+.cl-content {
+  flex: 1;
+  min-width: 0;
+  padding: 40px 36px;
+  background: var(--color-bg-light);
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .cl-topbar {
+    display: flex;
+  }
+
+  .cl-overlay {
+    display: block;
+  }
+
+  .cl-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: 4px 0 16px rgba(0,0,0,0.12);
+  }
+
+  .cl-sidebar--open {
+    transform: translateX(0);
+  }
+
+  .cl-close-btn {
+    display: flex;
+  }
+
+  .cl-content {
+    padding: 72px 20px 32px;
+  }
+}

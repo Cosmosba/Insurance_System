@@ -1,0 +1,379 @@
+/* ── Layout shell ────────────────────────────────────── */
+.sal-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--color-bg-light);
+}
+
+/* ── Mobile top bar ──────────────────────────────────── */
+.sal-topbar {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  padding: 0 16px;
+  background: var(--color-charcoal);
+  z-index: 200;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.25);
+}
+
+.sal-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  padding: 7px;
+  color: var(--color-white);
+  flex-shrink: 0;
+}
+
+.sal-menu-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.sal-topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-white);
+}
+
+.sal-topbar-icon { color: var(--color-primary); }
+
+/* ── Overlay ─────────────────────────────────────────── */
+.sal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 149;
+}
+
+/* ── Sidebar ─────────────────────────────────────────── */
+.sal-sidebar {
+  width: 268px;
+  min-height: 100vh;
+  background: var(--color-charcoal);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 150;
+}
+
+/* ── Brand ───────────────────────────────────────────── */
+.sal-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 16px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sal-brand-icon { color: var(--color-primary); flex-shrink: 0; }
+
+.sal-brand-text {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-white);
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+}
+
+.sal-brand-text span {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-primary);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.sal-close-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 4px;
+  color: rgba(255,255,255,0.6);
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.sal-close-btn:hover { color: var(--color-white); }
+
+.sal-close-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Nav ─────────────────────────────────────────────── */
+.sal-nav {
+  flex: 1;
+  padding: 16px 12px;
+  overflow-y: auto;
+}
+
+.sal-nav-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  padding: 0 8px;
+  margin-bottom: 6px;
+}
+
+.sal-nav ul {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sal-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.75);
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sal-nav-item:hover {
+  background: rgba(255,255,255,0.08);
+  color: var(--color-white);
+}
+
+.sal-nav-item:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.sal-nav-item--active {
+  background: rgba(141,182,0,0.18);
+  color: var(--color-white);
+  font-weight: 600;
+}
+
+.sal-nav-item--active .sal-nav-icon {
+  color: var(--color-primary);
+}
+
+.sal-nav-item--soon { opacity: 0.6; }
+
+.sal-nav-icon {
+  color: rgba(255,255,255,0.5);
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.sal-nav-item:hover .sal-nav-icon { color: rgba(255,255,255,0.9); }
+
+.sal-nav-label-text { flex: 1; }
+
+.sal-nav-soon {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.sal-nav-active-arrow {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+/* ── Sidebar footer ──────────────────────────────────── */
+.sal-footer {
+  padding: 12px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sal-account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+}
+
+.sal-account-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-charcoal);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sal-account-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sal-account-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sal-account-role {
+  font-size: 11px;
+  color: var(--color-primary);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.sal-signout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.12);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.sal-signout-btn:hover {
+  background: rgba(192,57,43,0.2);
+  color: #ff8a80;
+  border-color: rgba(192,57,43,0.3);
+}
+
+.sal-signout-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Main area ───────────────────────────────────────── */
+.sal-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Top header bar ──────────────────────────────────── */
+.sal-topheader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 36px;
+  height: 60px;
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.sal-page-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-charcoal);
+}
+
+.sal-topheader-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sal-topheader-email {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.sal-topheader-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-charcoal);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Content ─────────────────────────────────────────── */
+.sal-content {
+  flex: 1;
+  padding: 36px;
+  background: var(--color-bg-light);
+  overflow-y: auto;
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sal-topbar  { display: flex; }
+  .sal-overlay { display: block; }
+
+  .sal-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+  }
+
+  .sal-sidebar--open { transform: translateX(0); }
+  .sal-close-btn     { display: flex; }
+
+  .sal-topheader {
+    padding: 0 16px;
+    margin-top: 56px;
+  }
+
+  .sal-topheader-email { display: none; }
+
+  .sal-content { padding: 24px 16px; }
+}
