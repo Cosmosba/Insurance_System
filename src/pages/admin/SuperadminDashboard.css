@@ -283,6 +283,15 @@
   line-height: 1.6;
 }
 
+.sa-dept-error {
+  padding: 10px 12px;
+  color: #8a3030;
+  background: #fff4f2;
+  border: 1px solid #f2c9c4;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
 /* ── Quick actions grid ──────────────────────────────── */
 .sa-actions-grid {
   display: grid;

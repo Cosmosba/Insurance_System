@@ -6,20 +6,22 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import { getSession } from '../../services/mockAuth'
-import { departments, systemActivity, getAdminSummary } from '../../services/adminData'
+import { hasPermission } from '../../services/rolePermissions'
+import { systemActivity, getAdminSummary } from '../../services/adminData'
 import { formatGHS } from '../../services/customerData'
+import { getDepartments, subscribeToDepartments } from '../../services/departmentData'
+import {
+  getDepartmentManagerName,
+  getDepartmentStaffMembers,
+  getStaffUsers,
+  subscribeToStaffUsers,
+} from '../../services/userData'
 import './SuperadminDashboard.css'
 
 const deptStatusBadge = {
   Active:   'sa-badge--success',
   Inactive: 'sa-badge--neutral',
   Pending:  'sa-badge--warning',
-}
-
-const categoryColour = {
-  Product:    'sa-dept-cat--product',
-  Operations: 'sa-dept-cat--ops',
-  Compliance: 'sa-dept-cat--compliance',
 }
 
 function formatDateTime(date) {
@@ -34,16 +36,59 @@ function formatDateTime(date) {
   )
 }
 
+function safeManagerName(managerId) {
+  try {
+    return getDepartmentManagerName(managerId)
+  } catch {
+    return null
+  }
+}
+
+function safeDepartmentStaffCount(departmentId) {
+  try {
+    return getDepartmentStaffMembers(departmentId).length
+  } catch {
+    return null
+  }
+}
+
 export default function SuperadminDashboard() {
   const navigate = useNavigate()
   const session  = getSession()
-  const summary  = getAdminSummary()
+  const [departmentState, setDepartmentState] = useState(() => {
+    try {
+      return { records: getDepartments(), error: '' }
+    } catch (error) {
+      return { records: [], error: error.message || 'Unable to load departments.' }
+    }
+  })
+  const departments = departmentState.records
+  const [staffState, setStaffState] = useState(() => {
+    try {
+      return { records: getStaffUsers(), error: '' }
+    } catch (error) {
+      return { records: [], error: error.message || 'Unable to load staff accounts.' }
+    }
+  })
+  const summary  = getAdminSummary(departments.length, staffState.error ? null : staffState.records.length)
   const [now, setNow] = useState(new Date())
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(t)
   }, [])
+
+  useEffect(() => subscribeToDepartments((records, error) => {
+    setDepartmentState(current => error
+      ? { ...current, error: error.message || 'Unable to load departments.' }
+      : { records, error: '' })
+  }), [])
+
+  useEffect(() => subscribeToStaffUsers((records, error) => {
+    setStaffState(current => error
+      ? { ...current, error: error.message || 'Unable to load staff accounts.' }
+      : { records, error: '' })
+  }), [])
 
   const summaryCards = [
     {
@@ -87,12 +132,12 @@ export default function SuperadminDashboard() {
   ]
 
   const quickActions = [
-    { label: 'Manage Departments',      icon: Building2,      path: '/admin/departments' },
-    { label: 'Manage Users',            icon: Users,          path: '/admin/users'       },
-    { label: 'Roles & Permissions',     icon: ShieldCheck,    path: '/admin/roles'       },
-    { label: 'Customer Management',     icon: UserCheck,      path: '/admin/customers'   },
-    { label: 'System Activity',         icon: Activity,       path: '/admin/activity'    },
-    { label: 'Settings',                icon: Settings,       path: '/admin/settings'    },
+    { label: 'Manage Departments', icon: Building2, path: '/admin/departments', permission: 'departments.view' },
+    { label: 'Manage Users', icon: Users, path: '/admin/users', permission: 'users.view' },
+    { label: 'Roles & Permissions', icon: ShieldCheck, path: '/admin/roles-permissions', permission: 'roles.view' },
+    { label: 'Customer Management', icon: UserCheck, path: '/admin/customers', permission: 'customers.manage' },
+    { label: 'System Activity', icon: Activity, path: '/admin/activity', permission: 'activity.view' },
+    { label: 'Settings', icon: Settings, path: '/admin/settings', permission: 'settings.manage' },
   ]
 
   return (
@@ -144,12 +189,18 @@ export default function SuperadminDashboard() {
             Manage Departments <ChevronRight size={14} aria-hidden="true" />
           </button>
         </div>
+        {departmentState.error && (
+          <div className="sa-dept-error" role="alert">{departmentState.error}</div>
+        )}
+        {staffState.error && (
+          <div className="sa-dept-error" role="alert">{staffState.error}</div>
+        )}
         <div className="sa-table-wrap">
           <table className="sa-table">
             <thead>
               <tr>
                 <th scope="col">Department</th>
-                <th scope="col">Category</th>
+                <th scope="col">Code</th>
                 <th scope="col">Manager</th>
                 <th scope="col">Staff</th>
                 <th scope="col">Status</th>
@@ -160,15 +211,15 @@ export default function SuperadminDashboard() {
               {departments.map(dept => (
                 <tr key={dept.id} className="sa-table-row">
                   <td className="sa-dept-name">{dept.name}</td>
-                  <td>
-                    <span className={`sa-dept-cat ${categoryColour[dept.category] ?? ''}`}>
-                      {dept.category}
-                    </span>
+                  <td className="sa-mono">{dept.code}</td>
+                  <td className="sa-muted">
+                    {dept.managerId
+                      ? safeManagerName(dept.managerId) ?? 'Manager unavailable'
+                      : 'Unassigned'}
                   </td>
                   <td className="sa-muted">
-                    {dept.manager ?? 'Not assigned'}
+                    {safeDepartmentStaffCount(dept.id) ?? 'Unavailable'}
                   </td>
-                  <td className="sa-muted">{dept.staffCount}</td>
                   <td>
                     <span className={`sa-badge ${deptStatusBadge[dept.status] ?? ''}`}>
                       {dept.status}
@@ -240,7 +291,7 @@ export default function SuperadminDashboard() {
       <section aria-labelledby="sa-actions-heading" className="sa-section">
         <h2 id="sa-actions-heading" className="sa-section-label">Quick Actions</h2>
         <div className="sa-actions-grid">
-          {quickActions.map(({ label, icon: Icon, path }) => (
+          {quickActions.filter(action => hasPermission(session, action.permission)).map(({ label, icon: Icon, path }) => (
             <button
               key={label}
               type="button"

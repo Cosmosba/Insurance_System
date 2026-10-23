@@ -7,19 +7,7 @@
  */
 
 import { policies, payments, claims } from './customerData'
-
-// ── Departments ───────────────────────────────────────────────────────────────
-// Designed to be loaded from a database in production.
-// manager: null until a manager is assigned via the Departments module.
-export const departments = [
-  { id: 'dept-life',     name: 'Life',     category: 'Product',    staffCount: 0, manager: null, status: 'Active'   },
-  { id: 'dept-health',   name: 'Health',   category: 'Product',    staffCount: 0, manager: null, status: 'Active'   },
-  { id: 'dept-pensions', name: 'Pensions', category: 'Product',    staffCount: 0, manager: null, status: 'Active'   },
-  { id: 'dept-hr',       name: 'HR',       category: 'Operations', staffCount: 0, manager: null, status: 'Active'   },
-  { id: 'dept-audit',    name: 'Audit',    category: 'Compliance', staffCount: 0, manager: null, status: 'Active'   },
-  { id: 'dept-media',    name: 'Media',    category: 'Operations', staffCount: 0, manager: null, status: 'Active'   },
-  { id: 'dept-it',       name: 'IT',       category: 'Operations', staffCount: 0, manager: null, status: 'Active'   },
-]
+import { getDepartments } from './departmentData'
 
 // ── System activity ───────────────────────────────────────────────────────────
 // Authoritative audit events will come from the backend.
@@ -27,8 +15,7 @@ export const departments = [
 export const systemActivity = []
 
 // ── Org-wide summary (derived from available records) ────────────────────────
-export function getAdminSummary() {
-  const totalDepartments  = departments.length
+export function getAdminSummary(totalDepartments = getDepartments().length, totalStaff = null) {
   const activePolicies    = policies.filter(p => p.status === 'Active').length
   const totalPolicies     = policies.length
   const pendingClaims     = claims.filter(c =>
@@ -42,9 +29,7 @@ export function getAdminSummary() {
 
   return {
     totalDepartments,
-    // Staff and customer counts require a backend user directory.
-    // Returning null signals the UI to show a pending state rather than a wrong figure.
-    totalStaff:      null,
+    totalStaff,
     totalCustomers:  null,
     activePolicies,
     totalPolicies,

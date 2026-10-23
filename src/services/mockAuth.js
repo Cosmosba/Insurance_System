@@ -27,6 +27,23 @@ const DEMO_ACCOUNTS = {
   'superadmin@emple.test': { role: 'superadmin',  name: 'System Admin'   },
 }
 
+export function getKnownStaffAccounts() {
+  return Object.entries(DEMO_ACCOUNTS)
+    .filter(([, account]) => account.role === 'staff' || account.role === 'superadmin')
+    .map(([email, account]) => ({
+      email,
+      firstName: account.name.split(' ')[0],
+      lastName: account.name.split(' ').slice(1).join(' '),
+      role: account.role === 'superadmin' ? 'superadmin' : 'department_staff',
+    }))
+}
+
+export function getKnownCustomerAccounts() {
+  return Object.entries(DEMO_ACCOUNTS)
+    .filter(([, account]) => account.role === 'customer')
+    .map(([email, account]) => ({ email, name: account.name, role: account.role }))
+}
+
 // Default profile data keyed by email.
 // Fields here represent what a real API would return for the authenticated customer.
 const DEFAULT_PROFILES = {
@@ -83,6 +100,9 @@ export function getPhoto() {
 export function savePhoto(dataUrl) {
   const session = getSession()
   if (!session) return { ok: false, message: 'No active session.' }
+  if (!hasPermission(session, 'profile.edit_own')) {
+    return { ok: false, message: 'You do not have permission to update your profile photo.' }
+  }
   try {
     const stored = sessionStorage.getItem(PHOTO_KEY)
     const all    = stored ? JSON.parse(stored) : {}
@@ -122,6 +142,9 @@ export function getProfile() {
 export function saveProfile(updates) {
   const session = getSession()
   if (!session) return { ok: false, message: 'No active session.' }
+  if (!hasPermission(session, 'profile.edit_own')) {
+    return { ok: false, message: 'You do not have permission to edit your profile.' }
+  }
 
   // Fields the customer is allowed to change
   const EDITABLE = ['firstName', 'lastName', 'phone', 'altPhone', 'address']
@@ -192,3 +215,4 @@ export function getSession() {
 export function clearSession() {
   sessionStorage.removeItem(SESSION_KEY)
 }
+import { hasPermission } from './rolePermissions'

@@ -6,22 +6,23 @@ import {
   LogOut, Menu, X, Shield, ChevronRight,
 } from 'lucide-react'
 import { clearSession, getSession } from '../services/mockAuth'
+import { hasPermission } from '../services/rolePermissions'
 import './SuperadminLayout.css'
 
 const navItems = [
-  { label: 'Dashboard',          icon: LayoutDashboard, path: '/admin/dashboard'   },
-  { label: 'Departments',        icon: Building2,       path: '/admin/departments' },
-  { label: 'User Management',    icon: Users,           path: '/admin/users'       },
-  { label: 'Roles & Permissions',icon: ShieldCheck,     path: '/admin/roles'       },
-  { label: 'Customer Management',icon: UserCheck,       path: '/admin/customers'   },
-  { label: 'System Activity',    icon: Activity,        path: '/admin/activity'    },
-  { label: 'Reports & Analytics',icon: BarChart2,       path: '/admin/reports'     },
-  { label: 'Settings',           icon: Settings,        path: '/admin/settings'    },
+  { label: 'Dashboard',          icon: LayoutDashboard, path: '/admin/dashboard', permission: 'dashboard.admin.view' },
+  { label: 'Departments',        icon: Building2,       path: '/admin/departments', permission: 'departments.view' },
+  { label: 'User Management',    icon: Users,           path: '/admin/users', permission: 'users.view' },
+  { label: 'Roles & Permissions',icon: ShieldCheck,     path: '/admin/roles-permissions', permission: 'roles.view' },
+  { label: 'Customer Management',icon: UserCheck,       path: '/admin/customers', permission: 'customers.manage' },
+  { label: 'System Activity',    icon: Activity,        path: '/admin/activity', permission: 'activity.view' },
+  { label: 'Reports & Analytics',icon: BarChart2,       path: '/admin/reports', permission: 'reports.view' },
+  { label: 'Settings',           icon: Settings,        path: '/admin/settings', permission: 'settings.manage' },
 ]
 
 // Modules not yet implemented — navigating to these paths falls through to /login
 // via the catch-all route until each module is built.
-const IMPLEMENTED = new Set(['/admin/dashboard'])
+const IMPLEMENTED = new Set(['/admin/dashboard', '/admin/departments', '/admin/users', '/admin/roles-permissions'])
 
 export default function SuperadminLayout({ children }) {
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -106,8 +107,8 @@ export default function SuperadminLayout({ children }) {
         <nav className="sal-nav" aria-label="Admin menu">
           <p className="sal-nav-label">Administration</p>
           <ul>
-            {navItems.map(({ label, icon: Icon, path }) => {
-              const active = location.pathname === path
+            {navItems.filter(item => hasPermission(session, item.permission)).map(({ label, icon: Icon, path }) => {
+              const active = location.pathname === path || location.pathname.startsWith(`${path}/`)
               const ready  = IMPLEMENTED.has(path)
               return (
                 <li key={label}>

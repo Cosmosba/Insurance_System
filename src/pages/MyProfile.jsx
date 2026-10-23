@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { User, Mail, Phone, MapPin, Shield, Pencil, X, Check, AlertCircle, Camera } from 'lucide-react'
-import { getProfile, saveProfile, getPhoto, savePhoto } from '../services/mockAuth'
+import { getProfile, saveProfile, getPhoto, savePhoto, getSession } from '../services/mockAuth'
+import { hasPermission } from '../services/rolePermissions'
 import './MyProfile.css'
 
 // ── Validation helpers ────────────────────────────────────────────────────────
@@ -73,8 +74,10 @@ export default function MyProfile() {
   const [banner,   setBanner]   = useState(null)
   const [photoErr, setPhotoErr] = useState(null)
   const fileInputRef = useRef(null)
+  const canEditProfile = hasPermission(getSession(), 'profile.edit_own')
 
   function handlePhotoClick() {
+    if (!canEditProfile) return
     setPhotoErr(null)
     fileInputRef.current?.click()
   }
@@ -108,6 +111,7 @@ export default function MyProfile() {
   }
 
   function startEdit() {
+    if (!canEditProfile) return
     setDraft({
       firstName: profile.firstName,
       lastName:  profile.lastName,
@@ -179,7 +183,7 @@ export default function MyProfile() {
           <h1 className="pf-title">My Profile</h1>
           <p className="pf-subtitle">View and manage your personal information.</p>
         </div>
-        {!editing && (
+        {!editing && canEditProfile && (
           <button type="button" className="pf-edit-btn" onClick={startEdit} aria-label="Edit profile">
             <Pencil size={15} aria-hidden="true" />
             Edit Profile
@@ -211,14 +215,16 @@ export default function MyProfile() {
               ? <img src={photo} alt={fullName} className="pf-avatar pf-avatar--photo" />
               : <div className="pf-avatar" aria-hidden="true">{initials}</div>
             }
-            <button
-              type="button"
-              className="pf-avatar-upload-btn"
-              onClick={handlePhotoClick}
-              aria-label="Upload profile photo"
-            >
-              <Camera size={14} aria-hidden="true" />
-            </button>
+            {canEditProfile && (
+              <button
+                type="button"
+                className="pf-avatar-upload-btn"
+                onClick={handlePhotoClick}
+                aria-label="Upload profile photo"
+              >
+                <Camera size={14} aria-hidden="true" />
+              </button>
+            )}
             <input
               ref={fileInputRef}
               type="file"

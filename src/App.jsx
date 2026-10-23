@@ -15,6 +15,9 @@ import NewClaim from './pages/NewClaim'
 import MyProfile from './pages/MyProfile'
 import SuperadminLayout from './layouts/SuperadminLayout'
 import SuperadminDashboard from './pages/admin/SuperadminDashboard'
+import DepartmentsManagement from './pages/admin/DepartmentsManagement'
+import UserManagement from './pages/admin/UserManagement'
+import RolesPermissions from './pages/admin/RolesPermissions'
 import ProtectedRoute from './components/ProtectedRoute'
 
 export default function App() {
@@ -28,7 +31,7 @@ export default function App() {
         <Route
           path="/staff/dashboard"
           element={
-            <ProtectedRoute requiredRole="staff">
+            <ProtectedRoute requiredRole="staff" requiredPermission="dashboard.department.view">
               <MainLayout>
                 <Dashboard />
               </MainLayout>
@@ -40,7 +43,7 @@ export default function App() {
         <Route
           path="/customer/dashboard"
           element={
-            <ProtectedRoute requiredRole="customer">
+            <ProtectedRoute requiredRole="customer" requiredPermission="dashboard.customer.view">
               <CustomerLayout>
                 <CustomerDashboard />
               </CustomerLayout>
@@ -51,7 +54,7 @@ export default function App() {
         <Route
           path="/customer/policies"
           element={
-            <ProtectedRoute requiredRole="customer">
+            <ProtectedRoute requiredRole="customer" requiredPermission="policies.view_own">
               <CustomerLayout>
                 <MyPolicies />
               </CustomerLayout>
@@ -62,7 +65,7 @@ export default function App() {
         <Route
           path="/customer/policies/:id"
           element={
-            <ProtectedRoute requiredRole="customer">
+            <ProtectedRoute requiredRole="customer" requiredPermission="policies.view_own">
               <CustomerLayout>
                 <PolicyDetail />
               </CustomerLayout>
@@ -73,7 +76,7 @@ export default function App() {
         <Route
           path="/customer/payments"
           element={
-            <ProtectedRoute requiredRole="customer">
+            <ProtectedRoute requiredRole="customer" requiredPermission="payments.view_own">
               <CustomerLayout>
                 <Payments />
               </CustomerLayout>
@@ -84,7 +87,7 @@ export default function App() {
         <Route
           path="/customer/payments/:ref"
           element={
-            <ProtectedRoute requiredRole="customer">
+            <ProtectedRoute requiredRole="customer" requiredPermission="payments.view_own">
               <CustomerLayout>
                 <PaymentDetail />
               </CustomerLayout>
@@ -95,7 +98,7 @@ export default function App() {
         <Route
           path="/customer/claims"
           element={
-            <ProtectedRoute requiredRole="customer">
+            <ProtectedRoute requiredRole="customer" requiredPermission="claims.view_own">
               <CustomerLayout>
                 <MyClaims />
               </CustomerLayout>
@@ -106,7 +109,7 @@ export default function App() {
         <Route
           path="/customer/claims/new"
           element={
-            <ProtectedRoute requiredRole="customer">
+            <ProtectedRoute requiredRole="customer" requiredPermission="claims.submit_own">
               <CustomerLayout>
                 <NewClaim />
               </CustomerLayout>
@@ -117,7 +120,7 @@ export default function App() {
         <Route
           path="/customer/claims/:ref"
           element={
-            <ProtectedRoute requiredRole="customer">
+            <ProtectedRoute requiredRole="customer" requiredPermission="claims.view_own">
               <CustomerLayout>
                 <ClaimDetail />
               </CustomerLayout>
@@ -128,7 +131,7 @@ export default function App() {
         <Route
           path="/customer/profile"
           element={
-            <ProtectedRoute requiredRole="customer">
+            <ProtectedRoute requiredRole="customer" requiredPermission="profile.view_own">
               <CustomerLayout>
                 <MyProfile />
               </CustomerLayout>
@@ -140,12 +143,72 @@ export default function App() {
         <Route
           path="/admin/dashboard"
           element={
-            <ProtectedRoute requiredRole="superadmin">
+            <ProtectedRoute requiredRole="superadmin" requiredPermission="dashboard.admin.view">
               <SuperadminLayout>
                 <SuperadminDashboard />
               </SuperadminLayout>
             </ProtectedRoute>
           }
+        />
+
+        <Route
+          path="/admin/departments"
+          element={
+            <ProtectedRoute requiredRole="superadmin" requiredPermission="departments.view">
+              <SuperadminLayout>
+                <DepartmentsManagement />
+              </SuperadminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/departments/:id"
+          element={
+            <ProtectedRoute requiredRole="superadmin" requiredPermission="departments.view">
+              <SuperadminLayout>
+                <DepartmentsManagement />
+              </SuperadminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute requiredRole="superadmin" requiredPermission="users.view">
+              <SuperadminLayout>
+                <UserManagement />
+              </SuperadminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/users/:id"
+          element={
+            <ProtectedRoute requiredRole="superadmin" requiredPermission="users.view">
+              <SuperadminLayout>
+                <UserManagement />
+              </SuperadminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/roles-permissions"
+          element={
+            <ProtectedRoute requiredRole="superadmin" requiredPermission="roles.view">
+              <SuperadminLayout>
+                <RolesPermissions />
+              </SuperadminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/roles"
+          element={<Navigate to="/admin/roles-permissions" replace />}
         />
 
         {/* Fallback — send everyone to login */}
