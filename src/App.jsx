@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
 import Login from './pages/Login'
+import ChangePassword from './pages/ChangePassword'
 import MainLayout from './layouts/MainLayout'
 import CustomerLayout from './layouts/CustomerLayout'
 import Dashboard from './pages/Dashboard'
@@ -19,8 +20,10 @@ import DepartmentsManagement from './pages/admin/DepartmentsManagement'
 import UserManagement from './pages/admin/UserManagement'
 import RolesPermissions from './pages/admin/RolesPermissions'
 import CustomerManagement from './pages/admin/CustomerManagement'
+import SystemActivity from './pages/admin/SystemActivity'
 import ProtectedRoute from './components/ProtectedRoute'
 import { getSession } from './services/mockAuth'
+import './styles/glass-system.css'
 
 function CustomerManagementLayout({ children }) {
   return getSession()?.role === 'superadmin'
@@ -34,6 +37,7 @@ export default function App() {
       <Routes>
         {/* Public */}
         <Route path="/login" element={<Login />} />
+        <Route path="/change-password" element={<ChangePassword />} />
 
         {/* Staff — protected */}
         <Route
@@ -215,6 +219,17 @@ export default function App() {
         />
 
         <Route
+          path="/admin/system-activity"
+          element={
+            <ProtectedRoute requiredRole="superadmin" requiredPermission="activity.view">
+              <SuperadminLayout>
+                <SystemActivity />
+              </SuperadminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/admin/customers"
           element={
             <ProtectedRoute requiredPermission="customers.view">
@@ -239,6 +254,10 @@ export default function App() {
         <Route
           path="/admin/roles"
           element={<Navigate to="/admin/roles-permissions" replace />}
+        />
+        <Route
+          path="/admin/activity"
+          element={<Navigate to="/admin/system-activity" replace />}
         />
 
         {/* Fallback — send everyone to login */}

@@ -1,5 +1,5 @@
 import { Link, Navigate } from 'react-router-dom'
-import { getSession } from '../services/mockAuth'
+import { getRoleHome, getSession } from '../services/mockAuth'
 import { hasPermission } from '../services/rolePermissions'
 
 /**
@@ -11,16 +11,17 @@ import { hasPermission } from '../services/rolePermissions'
  * Replace with server-side auth enforcement before production.
  */
 
-const ROLE_HOME = {
-  staff:      '/staff/dashboard',
-  department_staff: '/staff/dashboard',
-  department_manager: '/staff/dashboard',
-  customer:   '/customer/dashboard',
-  superadmin: '/admin/dashboard',
-}
-
 function normalizeRole(role) {
   return role === 'staff' ? 'department_staff' : role
+}
+
+function hasRequiredRole(sessionRole, requiredRole) {
+  const normalizedSessionRole = normalizeRole(sessionRole)
+  const normalizedRequiredRole = normalizeRole(requiredRole)
+  if (normalizedRequiredRole === 'department_staff') {
+    return ['department_staff', 'department_manager'].includes(normalizedSessionRole)
+  }
+  return normalizedSessionRole === normalizedRequiredRole
 }
 
 function PermissionDenied({ home }) {
@@ -40,13 +41,17 @@ export default function ProtectedRoute({ children, requiredRole, requiredPermiss
     return <Navigate to="/login" replace />
   }
 
-  if (requiredRole && normalizeRole(session.role) !== normalizeRole(requiredRole)) {
-    const redirect = ROLE_HOME[session.role] ?? '/login'
+  if (session.mustChangePassword) {
+    return <Navigate to="/change-password" replace />
+  }
+
+  if (requiredRole && !hasRequiredRole(session.role, requiredRole)) {
+    const redirect = getRoleHome(session.role)
     return <Navigate to={redirect} replace />
   }
 
   if (requiredPermission && !hasPermission(session, requiredPermission)) {
-    return <PermissionDenied home={ROLE_HOME[session.role] ?? '/login'} />
+    return <PermissionDenied home={getRoleHome(session.role)} />
   }
 
   return children

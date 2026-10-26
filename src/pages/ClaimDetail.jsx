@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, FileSearch, AlertTriangle, FileText, CheckCircle2, Circle } from 'lucide-react'
-import { claims, policies, formatGHS } from '../services/customerData'
+import { getSession } from '../services/mockAuth'
+import { getCustomerWorkspaceData, formatGHS } from '../services/customerData'
 import './MyClaims.css'
 
 const statusBadge = {
@@ -24,6 +25,7 @@ function DetailRow({ label, value }) {
 export default function ClaimDetail() {
   const { ref }  = useParams()
   const navigate = useNavigate()
+  const { claims, policies } = getCustomerWorkspaceData(getSession()?.email)
   const claim    = claims.find(c => c.ref === ref)
 
   if (!claim) {

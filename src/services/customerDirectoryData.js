@@ -2,6 +2,10 @@ import { getSession, getKnownCustomerProfiles } from './mockAuth'
 import { claims, payments, policies } from './customerData'
 import { hasPermission } from './rolePermissions'
 import { recordRoleAuditEvent } from './roleAudit'
+import {
+  createPasswordCredential,
+  generateDefaultPassword,
+} from './passwordCredentials'
 
 const STORAGE_KEY = 'emple_customers_v1'
 const CHANGE_EVENT = 'emple:customers-updated'
@@ -9,7 +13,7 @@ const VALID_STATUSES = new Set(['Active', 'Inactive'])
 const CUSTOMER_FIELDS = new Set([
   'id', 'firstName', 'lastName', 'email', 'phone', 'altPhone',
   'dateOfBirth', 'gender', 'address', 'status', 'registrationDate',
-  'createdAt', 'updatedAt', 'authManaged',
+  'createdAt', 'updatedAt', 'authManaged', 'passwordSalt', 'passwordHash', 'mustChangePassword',
 ])
 
 export class CustomerDataError extends Error {
@@ -55,8 +59,8 @@ function validateRecord(record) {
   return Boolean(
     record
     && typeof record.id === 'string'
-    && typeof record.firstName === 'string'
-    && typeof record.lastName === 'string'
+    && (record.firstName === undefined || typeof record.firstName === 'string')
+    && (record.lastName === undefined || typeof record.lastName === 'string')
     && typeof record.email === 'string'
     && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(record.email)
     && typeof record.phone === 'string'
@@ -72,8 +76,17 @@ function validateRecord(record) {
     ))
     && (record.updatedAt === null || typeof record.updatedAt === 'string')
     && typeof record.authManaged === 'boolean'
+    && (record.passwordSalt === undefined || typeof record.passwordSalt === 'string')
+    && (record.passwordHash === undefined || typeof record.passwordHash === 'string')
+    && (record.mustChangePassword === undefined || typeof record.mustChangePassword === 'boolean')
     && Object.keys(record).every(key => CUSTOMER_FIELDS.has(key)),
   )
+}
+
+function publicCustomer(customer) {
+  return Object.fromEntries(Object.entries(customer).filter(([key]) => (
+    !['passwordSalt', 'passwordHash', 'mustChangePassword'].includes(key)
+  )))
 }
 
 function readStoredCustomers() {
@@ -100,7 +113,18 @@ function readStoredCustomers() {
   ) {
     throw new CustomerDataError('Saved customer records have an invalid format. Correct or remove the invalid customer data before continuing.')
   }
-  return customers
+  const normalized = customers.map(customer => ({
+    ...customer,
+    firstName: String(customer.firstName ?? '').trim(),
+    lastName: String(customer.lastName ?? '').trim(),
+  }))
+  if (customers.some((customer, index) => (
+    customer.firstName !== normalized[index].firstName
+    || customer.lastName !== normalized[index].lastName
+  ))) {
+    persistCustomers(normalized)
+  }
+  return normalized
 }
 
 function persistCustomers(customers) {
@@ -189,6 +213,11 @@ function validateCustomerInput(input, customers, currentId = null) {
     customer.id !== currentId && normalizePhone(customer.phone).replace(/^\+/, '') === phoneDigits
   ))
   if (duplicatePhone) fieldErrors.phone = 'A customer with this phone number already exists.'
+  try {
+    generateDefaultPassword(fields.firstName, fields.lastName)
+  } catch (error) {
+    fieldErrors.lastName = error.message
+  }
   if (Object.keys(fieldErrors).length) {
     throw new CustomerDataError('Review the highlighted customer details.', fieldErrors)
   }
@@ -260,7 +289,7 @@ function requireCustomerById(customers, id) {
 
 export function getCustomerDirectory() {
   requirePermission('customers.view')
-  return ensureCustomers().map(customer => ({ ...customer }))
+  return ensureCustomers().map(publicCustomer)
     .sort((a, b) => b.registrationDate.localeCompare(a.registrationDate))
 }
 
@@ -279,14 +308,19 @@ export function filterCustomerDirectory(customers, query = '', { status = '', so
       : b.registrationDate.localeCompare(a.registrationDate))
 }
 
-export function createCustomer(input) {
+export async function createCustomer(input) {
   const session = requirePermission('customers.create')
   const customers = ensureCustomers()
   const fields = validateCustomerInput(input, customers)
+  const credential = await createPasswordCredential(
+    generateDefaultPassword(fields.firstName, fields.lastName),
+  )
   const now = new Date().toISOString()
   const customer = {
     id: generateCustomerId(customers),
     ...fields,
+    ...credential,
+    mustChangePassword: true,
     status: 'Active',
     registrationDate: now.slice(0, 10),
     createdAt: now,
@@ -299,9 +333,9 @@ export function createCustomer(input) {
     targetType: 'customer',
     targetId: customer.id,
     targetName: `${customer.firstName} ${customer.lastName}`,
-    details: `Registered by ${session.email}. No login credentials were created.`,
+    details: `Registered by ${session.email}. First-login password change required.`,
   })
-  return { ...customer }
+  return publicCustomer(customer)
 }
 
 export function previewCustomerImport(records) {
@@ -319,7 +353,7 @@ export function previewCustomerImport(records) {
   }
 }
 
-export function importCustomerRecords(records) {
+export async function importCustomerRecords(records) {
   const session = requirePermission('customers.create')
   if (!Array.isArray(records) || records.length === 0) {
     throw new CustomerDataError('Select valid customer records to import.')
@@ -330,9 +364,14 @@ export function importCustomerRecords(records) {
   const now = new Date().toISOString()
   const imported = []
   for (const record of validRecords) {
+    const credential = await createPasswordCredential(
+      generateDefaultPassword(record.fields.firstName, record.fields.lastName),
+    )
     imported.push({
       id: generateCustomerId([...customers, ...imported]),
       ...record.fields,
+      ...credential,
+      mustChangePassword: true,
       status: 'Active',
       registrationDate: now.slice(0, 10),
       createdAt: now,
@@ -386,7 +425,7 @@ export function updateCustomer(id, input) {
     targetName: `${updated.firstName} ${updated.lastName}`,
     details: `Updated by ${session.email}.`,
   })
-  return { ...updated }
+  return publicCustomer(updated)
 }
 
 export function setCustomerStatus(id, status) {
@@ -395,7 +434,7 @@ export function setCustomerStatus(id, status) {
   const session = requirePermission(permission)
   const customers = ensureCustomers()
   const current = requireCustomerById(customers, id)
-  if (current.status === status) return { ...current }
+  if (current.status === status) return publicCustomer(current)
   const updated = { ...current, status, updatedAt: new Date().toISOString() }
   persistCustomers(customers.map(customer => customer.id === id ? updated : customer))
   recordAudit({
@@ -405,7 +444,7 @@ export function setCustomerStatus(id, status) {
     targetName: `${updated.firstName} ${updated.lastName}`,
     details: `Status changed by ${session.email}.`,
   })
-  return { ...updated }
+  return publicCustomer(updated)
 }
 
 export function getCustomerProfile(id) {
@@ -421,7 +460,7 @@ export function getCustomerProfile(id) {
     : []
   const policyIds = new Set(customerPolicies.map(policy => policy.id))
   return {
-    ...customer,
+    ...publicCustomer(customer),
     policies: customerPolicies.map(policy => ({ ...policy })),
     payments: payments.filter(payment => policyIds.has(payment.policyId)).map(payment => ({ ...payment })),
     claims: claims.filter(claim => policyIds.has(claim.policyId)).map(claim => ({ ...claim })),

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { mockLogin, getSession } from '../services/mockAuth'
+import { mockLogin, getRoleHome, getSession } from '../services/mockAuth'
 import './Login.css'
 
 const TYPEWRITER_TEXT = 'Sign into your account to continue'
@@ -17,6 +17,9 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [needsNameCompletion, setNeedsNameCompletion] = useState(false)
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [remember, setRemember] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -25,9 +28,7 @@ export default function Login() {
   useEffect(() => {
     const session = getSession()
     if (session) {
-      const dest = session.role === 'superadmin' ? '/admin/dashboard'
-        : session.role === 'staff' ? '/staff/dashboard'
-        : '/customer/dashboard'
+      const dest = session.mustChangePassword ? '/change-password' : getRoleHome(session.role)
       navigate(dest, { replace: true })
     }
   }, [navigate])
@@ -56,16 +57,30 @@ export default function Login() {
     setLoading(true)
 
     // Simulate a brief async delay for realistic feedback
-    setTimeout(() => {
-      const result = mockLogin(email, password)
+    setTimeout(async () => {
+      let result
+      try {
+        result = await mockLogin(email, password, needsNameCompletion ? { firstName, lastName } : {})
+      } catch {
+        result = { ok: false, message: 'Unable to sign in right now. Please try again.' }
+      }
       setLoading(false)
       if (!result.ok) {
-        setError(result.message)
+        if (result.needsNameCompletion) {
+          setNeedsNameCompletion(true)
+          setFirstName(result.firstName)
+          setLastName(result.lastName)
+          setError(result.message
+            || 'Complete the missing name fields and enter the current password to verify the account. The changes are saved only after sign-in is verified.')
+        } else {
+          setError(result.message)
+        }
         return
       }
-      const dest = result.session.role === 'superadmin' ? '/admin/dashboard'
-        : result.session.role === 'staff' ? '/staff/dashboard'
-        : '/customer/dashboard'
+      setNeedsNameCompletion(false)
+      const dest = result.session.mustChangePassword
+        ? '/change-password'
+        : getRoleHome(result.session.role)
       navigate(dest, { replace: true })
     }, 600)
   }
@@ -103,11 +118,45 @@ export default function Login() {
                 className="form-input"
                 placeholder="Enter your email address"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={e => {
+                  setEmail(e.target.value)
+                  setNeedsNameCompletion(false)
+                  setFirstName('')
+                  setLastName('')
+                }}
                 autoComplete="email"
                 disabled={loading}
               />
             </div>
+
+            {needsNameCompletion && (
+              <>
+                <div className="form-group">
+                  <label htmlFor="login-first-name" className="form-label">First Name</label>
+                  <input
+                    id="login-first-name"
+                    type="text"
+                    className="form-input"
+                    value={firstName}
+                    onChange={e => setFirstName(e.target.value)}
+                    autoComplete="given-name"
+                    disabled={loading}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="login-last-name" className="form-label">Surname</label>
+                  <input
+                    id="login-last-name"
+                    type="text"
+                    className="form-input"
+                    value={lastName}
+                    onChange={e => setLastName(e.target.value)}
+                    autoComplete="family-name"
+                    disabled={loading}
+                  />
+                </div>
+              </>
+            )}
 
             {/* Password */}
             <div className="form-group">
@@ -154,16 +203,9 @@ export default function Login() {
 
             {/* Submit */}
             <button type="submit" className="login-submit" disabled={loading}>
-              {loading ? 'Signing in…' : 'Sign In'}
+              {loading ? 'Signing in…' : needsNameCompletion ? 'Verify and continue' : 'Sign In'}
             </button>
           </form>
-
-          {/* Dev hint */}
-          <div className="login-dev-hint" aria-label="Development demo credentials">
-            <strong>Demo accounts</strong>
-            <span>customer@emple.test · staff@emple.test</span>
-            <span>Password: demo1234</span>
-          </div>
 
           {/* Registration prompt */}
           <p className="login-register">

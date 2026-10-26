@@ -61,7 +61,7 @@ export const PERMISSION_CATALOG = [
   { id: 'permissions.manage', name: 'Manage permissions', description: 'Manage system permission profiles.', category: 'Roles & Permissions', action: 'Manage', implemented: true },
 
   { id: 'customers.view', name: 'View customer records', description: 'View customer records, subject to assigned access scope.', category: 'Customer Management', action: 'View', implemented: true },
-  { id: 'customers.create', name: 'Register customers', description: 'Create customer directory records without provisioning sign-in credentials.', category: 'Customer Management', action: 'Create', implemented: true },
+  { id: 'customers.create', name: 'Register customers', description: 'Create customer accounts with a generated first-login password change requirement.', category: 'Customer Management', action: 'Create', implemented: true },
   { id: 'customers.edit', name: 'Edit customer records', description: 'Edit customer contact and profile details.', category: 'Customer Management', action: 'Edit', implemented: true },
   { id: 'customers.activate', name: 'Activate customer accounts', description: 'Activate an inactive customer account.', category: 'Customer Management', action: 'Activate', implemented: true },
   { id: 'customers.deactivate', name: 'Deactivate customer accounts', description: 'Deactivate an active customer account.', category: 'Customer Management', action: 'Deactivate', implemented: true },
@@ -78,7 +78,7 @@ export const PERMISSION_CATALOG = [
   { id: 'profile.view_own', name: 'View own profile', description: 'View the signed-in customer’s profile.', category: 'Customer Profile', action: 'View own', implemented: true },
   { id: 'profile.edit_own', name: 'Edit own profile', description: 'Edit the signed-in customer’s permitted profile fields.', category: 'Customer Profile', action: 'Edit own', implemented: true },
   { id: 'settings.manage', name: 'Manage system settings', description: 'Change organisation-wide settings where available.', category: 'System Settings', action: 'Manage', implemented: false },
-  { id: 'activity.view', name: 'View administrative activity', description: 'View administrative activity records where available.', category: 'Audit & Activity Logs', action: 'View', implemented: false },
+  { id: 'activity.view', name: 'View administrative activity', description: 'View recorded administrative activity.', category: 'Audit & Activity Logs', action: 'View', implemented: true },
 ]
 
 const PERMISSION_IDS = new Set(PERMISSION_CATALOG.map(permission => permission.id))

@@ -7,7 +7,8 @@ import {
 } from 'lucide-react'
 import { getSession } from '../../services/mockAuth'
 import { hasPermission } from '../../services/rolePermissions'
-import { systemActivity, getAdminSummary } from '../../services/adminData'
+import { getAdminSummary } from '../../services/adminData'
+import { getRoleAuditEvents, subscribeToRoleAuditEvents } from '../../services/roleAudit'
 import { formatGHS } from '../../services/customerData'
 import { getDepartments, subscribeToDepartments } from '../../services/departmentData'
 import {
@@ -34,6 +35,15 @@ function formatDateTime(date) {
       hour: '2-digit', minute: '2-digit', second: '2-digit',
     })
   )
+}
+
+function formatAuditTimestamp(timestamp) {
+  const date = new Date(timestamp)
+  if (Number.isNaN(date.getTime())) return 'Not recorded'
+  return new Intl.DateTimeFormat('en-GB', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date)
 }
 
 function safeManagerName(managerId) {
@@ -72,6 +82,13 @@ export default function SuperadminDashboard() {
   })
   const summary  = getAdminSummary(departments.length, staffState.error ? null : staffState.records.length)
   const [now, setNow] = useState(new Date())
+  const [activityState, setActivityState] = useState(() => {
+    try {
+      return { records: getRoleAuditEvents(), error: '' }
+    } catch (error) {
+      return { records: [], error: error.message || 'Unable to load system activity.' }
+    }
+  })
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000)
@@ -87,6 +104,12 @@ export default function SuperadminDashboard() {
   useEffect(() => subscribeToStaffUsers((records, error) => {
     setStaffState(current => error
       ? { ...current, error: error.message || 'Unable to load staff accounts.' }
+      : { records, error: '' })
+  }), [])
+
+  useEffect(() => subscribeToRoleAuditEvents((records, error) => {
+    setActivityState(error
+      ? current => ({ ...current, error: error.message || 'Unable to load system activity.' })
       : { records, error: '' })
   }), [])
 
@@ -136,7 +159,7 @@ export default function SuperadminDashboard() {
     { label: 'Manage Users', icon: Users, path: '/admin/users', permission: 'users.view' },
     { label: 'Roles & Permissions', icon: ShieldCheck, path: '/admin/roles-permissions', permission: 'roles.view' },
     { label: 'Customer Management', icon: UserCheck, path: '/admin/customers', permission: 'customers.manage' },
-    { label: 'System Activity', icon: Activity, path: '/admin/activity', permission: 'activity.view' },
+    { label: 'System Activity', icon: Activity, path: '/admin/system-activity', permission: 'activity.view' },
     { label: 'Settings', icon: Settings, path: '/admin/settings', permission: 'settings.manage' },
   ]
 
@@ -249,16 +272,21 @@ export default function SuperadminDashboard() {
           <button
             type="button"
             className="sa-section-link"
-            onClick={() => navigate('/admin/activity')}
+            onClick={() => navigate('/admin/system-activity')}
           >
             View All <ChevronRight size={14} aria-hidden="true" />
           </button>
         </div>
-        {systemActivity.length === 0 ? (
+        {activityState.error ? (
+          <div className="sa-empty">
+            <Activity size={26} className="sa-empty-icon" aria-hidden="true" />
+            <p className="sa-empty-msg">{activityState.error}</p>
+          </div>
+        ) : activityState.records.length === 0 ? (
           <div className="sa-empty">
             <Activity size={26} className="sa-empty-icon" aria-hidden="true" />
             <p className="sa-empty-msg">
-              No system activity has been recorded yet. Administrative events will appear here once the audit log is connected.
+              No system activity has been recorded yet.
             </p>
           </div>
         ) : (
@@ -273,12 +301,12 @@ export default function SuperadminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {systemActivity.slice(0, 8).map(item => (
+                {activityState.records.slice(0, 8).map(item => (
                   <tr key={item.id}>
-                    <td>{item.event}</td>
-                    <td className="sa-mono">{item.ref}</td>
-                    <td className="sa-muted">{item.date}</td>
-                    <td className="sa-muted">{item.type}</td>
+                    <td>{item.action}</td>
+                    <td className="sa-mono">{item.targetName}</td>
+                    <td className="sa-muted">{formatAuditTimestamp(item.timestamp)}</td>
+                    <td className="sa-muted">{item.module ?? item.targetType}</td>
                   </tr>
                 ))}
               </tbody>

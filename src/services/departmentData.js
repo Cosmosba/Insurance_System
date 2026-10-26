@@ -1,5 +1,6 @@
 import { hasPermission } from './rolePermissions'
 import { getSession } from './mockAuth'
+import { recordRoleAuditEvent } from './roleAudit'
 
 const STORAGE_KEY = 'emple_departments_v1'
 const CHANGE_EVENT = 'emple:departments-updated'
@@ -22,10 +23,11 @@ const INITIAL_DEPARTMENTS = [
 }))
 
 export class DepartmentDataError extends Error {
-  constructor(message, fieldErrors = {}) {
+  constructor(message, fieldErrors = {}, details = {}) {
     super(message)
     this.name = 'DepartmentDataError'
     this.fieldErrors = fieldErrors
+    this.details = details
   }
 }
 
@@ -55,9 +57,20 @@ function persist(departments) {
     if (error instanceof DepartmentDataError) throw error
     throw new DepartmentDataError('Unable to save departments in this browser.')
   }
-
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(CHANGE_EVENT))
+  }
+}
+
+function recordDepartmentAudit(event) {
+  try {
+    recordRoleAuditEvent(event)
+  } catch (error) {
+    throw new DepartmentDataError(
+      'The department change was saved, but administrative history could not be updated.',
+      {},
+      { saved: true, cause: error },
+    )
   }
 }
 
@@ -177,6 +190,13 @@ export function createDepartment(input) {
     updatedAt: now,
   }
   persist([...departments, department])
+  recordDepartmentAudit({
+    action: 'Department created',
+    targetType: 'department',
+    targetId: department.id,
+    targetName: department.name,
+    details: `Created by ${getSession()?.email ?? 'an administrator'}.`,
+  })
   return { ...department }
 }
 
@@ -199,6 +219,16 @@ export function updateDepartment(id, input) {
 
   const next = { ...existing, ...values, updatedAt: new Date().toISOString() }
   persist(departments.map(department => department.id === id ? next : department))
+  const changedFields = Object.keys(values).filter(key => values[key] !== existing[key])
+  recordDepartmentAudit({
+    action: changedFields.includes('status')
+      ? `Department ${next.status === 'Active' ? 'activated' : 'deactivated'}`
+      : 'Department updated',
+    targetType: 'department',
+    targetId: next.id,
+    targetName: next.name,
+    details: `Updated by ${getSession()?.email ?? 'an administrator'}; changed fields: ${changedFields.join(', ')}.`,
+  })
   return { ...next }
 }
 

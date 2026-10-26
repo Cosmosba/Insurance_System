@@ -1,0 +1,373 @@
+:root {
+  --color-primary: #8db600;
+  --color-primary-dark: #6a8a00;
+  --color-white: #fff;
+  --color-bg-light: #f7f9f5;
+  --color-charcoal: #263126;
+  --color-text: #4a5568;
+  --color-text-muted: #718071;
+  --color-border: #e2e8d9;
+
+  --glass-surface: rgba(255, 255, 255, 0.78);
+  --glass-surface-strong: rgba(255, 255, 255, 0.9);
+  --glass-surface-subtle: rgba(247, 249, 245, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.78);
+  --glass-outline: rgba(91, 112, 57, 0.15);
+  --glass-highlight: rgba(255, 255, 255, 0.72);
+  --glass-shadow: 0 12px 32px rgba(38, 49, 38, 0.075);
+  --glass-shadow-raised: 0 18px 42px rgba(38, 49, 38, 0.12);
+  --glass-blur: 12px;
+  --glass-radius-sm: 10px;
+  --glass-radius-md: 14px;
+  --glass-radius-lg: 18px;
+  --motion-fast: 150ms ease;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 8% 0%, rgba(141, 182, 0, 0.08), transparent 35%),
+    radial-gradient(ellipse at 100% 14%, rgba(196, 215, 155, 0.16), transparent 32%),
+    var(--color-bg-light);
+  color: var(--color-text);
+}
+
+#root {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.app-layout,
+.cl-layout,
+.sal-layout {
+  background:
+    radial-gradient(ellipse at 90% 0%, rgba(141, 182, 0, 0.07), transparent 34%),
+    linear-gradient(145deg, #f8faf6 0%, #f1f5ec 100%);
+}
+
+.app-content,
+.cl-content,
+.sal-content {
+  min-width: 0;
+  background: transparent;
+}
+
+.sidebar {
+  background: rgba(119, 153, 0, 0.94);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 8px 0 28px rgba(62, 82, 0, 0.08);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+.cl-sidebar {
+  background: rgba(255, 255, 255, 0.82);
+  border-right-color: var(--glass-border);
+  box-shadow: 8px 0 28px rgba(38, 49, 38, 0.045);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+.cl-topbar,
+.sal-topheader {
+  background: rgba(255, 255, 255, 0.82);
+  border-bottom-color: rgba(91, 112, 57, 0.12);
+  box-shadow: 0 8px 22px rgba(38, 49, 38, 0.045);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+.sal-sidebar,
+.sal-topbar {
+  background: rgba(38, 49, 38, 0.94);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+.summary-card,
+.cd-card,
+.sa-card,
+.mp-card,
+.cl2-card,
+.py-card,
+.um-summary-card,
+.cm-summary-card,
+.dm-summary-card,
+.rp-summary-card,
+.pf-hero-card,
+.py-upcoming-item,
+.um-card,
+.cm-card,
+.dm-card,
+.rp-table-wrap,
+.rp-matrix-wrap,
+.table-wrapper,
+.cd-table-wrap,
+.sa-table-wrap,
+.um-table-wrap,
+.cm-directory,
+.cm-table-wrap,
+.dm-table-wrap,
+.mp-table-wrap,
+.cl2-table-wrap,
+.py-table-wrap,
+.um-dialog,
+.cm-dialog,
+.login-card,
+.password-card {
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+.summary-card,
+.cd-card,
+.sa-card,
+.mp-card,
+.cl2-card,
+.py-card,
+.um-summary-card,
+.cm-summary-card,
+.dm-summary-card,
+.rp-summary-card,
+.pf-hero-card,
+.py-upcoming-item {
+  border-color: var(--glass-outline);
+  border-radius: var(--glass-radius-md);
+  transition: transform var(--motion-fast), box-shadow var(--motion-fast);
+}
+
+.summary-card:hover,
+.cd-card:hover,
+.sa-card:hover,
+.mp-card:hover,
+.cl2-card:hover,
+.py-card:hover,
+.um-summary-card:hover,
+.cm-summary-card:hover,
+.dm-summary-card:hover,
+.rp-summary-card:hover,
+.pf-hero-card:hover,
+.py-upcoming-item:hover {
+  box-shadow: var(--glass-shadow-raised), inset 0 1px 0 var(--glass-highlight);
+}
+
+.um-card,
+.cm-card,
+.dm-card {
+  border-color: var(--glass-outline);
+  border-radius: var(--glass-radius-md);
+}
+
+.um-table-wrap,
+.cm-table-wrap,
+.dm-table-wrap,
+.table-wrapper,
+.cd-table-wrap,
+.sa-table-wrap,
+.rp-table-wrap,
+.rp-matrix-wrap,
+.mp-table-wrap,
+.cl2-table-wrap,
+.py-table-wrap {
+  overflow-x: auto;
+  border-color: var(--glass-outline);
+  border-radius: var(--glass-radius-md);
+}
+
+.activity-table thead,
+.cd-table thead,
+.sa-table thead,
+.rp-table thead,
+.um-table th,
+.cm-table th,
+.dm-table th {
+  background: rgba(238, 244, 227, 0.74);
+}
+
+.activity-table tbody tr:hover td,
+.cd-table tbody tr:hover td,
+.sa-table-row:hover td,
+.um-table tbody tr:hover,
+.cm-table tbody tr:hover,
+.dm-table tbody tr:hover {
+  background: rgba(141, 182, 0, 0.055);
+}
+
+.activity-table td,
+.cd-table td,
+.sa-table td,
+.rp-table td,
+.um-table td,
+.cm-table td,
+.dm-table td {
+  border-color: rgba(91, 112, 57, 0.11);
+}
+
+.um-search,
+.um-filter,
+.cm-search,
+.cm-select,
+.dm-search,
+.dm-filter,
+.form-input,
+.mp-search,
+.cl2-search,
+.py-search,
+.rp-search,
+.um-form-field input,
+.um-form-field select,
+.cm-dialog input,
+.cm-dialog select,
+.cm-dialog textarea,
+.dm-dialog input,
+.dm-dialog select,
+.dm-dialog textarea,
+.rp-page input,
+.rp-page select,
+.rp-page textarea {
+  background-color: rgba(255, 255, 255, 0.76);
+  border-color: rgba(91, 112, 57, 0.2);
+  border-radius: var(--glass-radius-sm);
+}
+
+.um-search:focus-within,
+.um-filter:focus-within,
+.cm-search:focus-within,
+.cm-select:focus-within,
+.dm-search:focus-within,
+.dm-filter:focus-within,
+.form-input:focus,
+.mp-search:focus,
+.cl2-search:focus,
+.py-search:focus,
+.um-form-field input:focus,
+.um-form-field select:focus,
+.cm-dialog input:focus,
+.cm-dialog select:focus,
+.cm-dialog textarea:focus,
+.dm-dialog input:focus,
+.dm-dialog select:focus,
+.dm-dialog textarea:focus,
+.rp-page input:focus,
+.rp-page select:focus,
+.rp-page textarea:focus {
+  border-color: var(--color-primary);
+  outline: 3px solid rgba(141, 182, 0, 0.15);
+}
+
+.um-button--primary,
+.cm-button--primary,
+.dm-button--primary,
+.action-primary,
+.cl2-new-btn,
+.pf-edit-btn,
+.login-submit {
+  box-shadow: 0 5px 14px rgba(109, 143, 0, 0.16);
+  transition: transform var(--motion-fast), box-shadow var(--motion-fast), background var(--motion-fast);
+}
+
+.um-button--primary:hover:not(:disabled),
+.cm-button--primary:hover:not(:disabled),
+.dm-button--primary:hover:not(:disabled),
+.action-primary:hover,
+.cl2-new-btn:hover,
+.pf-edit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(109, 143, 0, 0.22);
+}
+
+.um-dialog,
+.cm-dialog {
+  background: var(--glass-surface-strong);
+  border-color: rgba(255, 255, 255, 0.86);
+  border-radius: var(--glass-radius-lg);
+  box-shadow: 0 24px 70px rgba(26, 37, 24, 0.2), inset 0 1px 0 #fff;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+
+.um-dialog::backdrop,
+.cm-dialog::backdrop {
+  background: rgba(28, 38, 27, 0.42);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: var(--glass-radius-lg);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.password-card {
+  background: rgba(255, 255, 255, 0.84);
+  border-color: rgba(255, 255, 255, 0.84);
+  border-radius: var(--glass-radius-lg);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+:where(button, a, input, select, textarea, summary):focus-visible {
+  outline-color: var(--color-primary);
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .summary-card,
+  .cd-card,
+  .sa-card,
+  .mp-card,
+  .cl2-card,
+  .py-card,
+  .um-summary-card,
+  .cm-summary-card,
+  .dm-summary-card,
+  .rp-summary-card,
+  .pf-hero-card,
+  .py-upcoming-item,
+  .um-card,
+  .cm-card,
+  .dm-card,
+  .rp-table-wrap,
+  .rp-matrix-wrap,
+  .table-wrapper,
+  .cd-table-wrap,
+  .sa-table-wrap,
+  .um-table-wrap,
+  .cm-directory,
+  .cm-table-wrap,
+  .dm-table-wrap,
+  .mp-table-wrap,
+  .cl2-table-wrap,
+  .py-table-wrap,
+  .um-dialog,
+  .cm-dialog,
+  .login-card,
+  .password-card {
+    background: rgba(255, 255, 255, 0.95);
+  }
+}
+
+@media (max-width: 768px) {
+  .app-content,
+  .cl-content {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

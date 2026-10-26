@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, CreditCard, AlertTriangle, FileText } from 'lucide-react'
-import { payments, policies, formatGHS } from '../services/customerData'
+import { getSession } from '../services/mockAuth'
+import { getCustomerWorkspaceData, formatGHS } from '../services/customerData'
 import './Payments.css'
 
 const statusBadge = {
@@ -23,6 +24,7 @@ function DetailRow({ label, value }) {
 export default function PaymentDetail() {
   const { ref }  = useParams()
   const navigate = useNavigate()
+  const { payments, policies } = getCustomerWorkspaceData(getSession()?.email)
   const payment  = payments.find(p => p.ref === ref)
 
   if (!payment) {

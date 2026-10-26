@@ -162,10 +162,10 @@ export default function CustomerManagement() {
     setFormErrors({})
     setFormMessage('')
     try {
-      const saved = editingId ? updateCustomer(editingId, form) : createCustomer(form)
+      const saved = editingId ? updateCustomer(editingId, form) : await createCustomer(form)
       refreshDirectory()
       closeForm()
-      setNotice(editingId ? 'Customer details saved.' : 'Customer registered. No login credentials were created.')
+      setNotice(editingId ? 'Customer details saved.' : 'Customer registered. A first-login password change is required.')
       if (!editingId) navigate(`/admin/customers/${saved.id}`)
     } catch (error) {
       if (error instanceof CustomerDataError && error.fieldErrors) setFormErrors(error.fieldErrors)
@@ -428,7 +428,7 @@ function CustomerForm({ dialogRef, open, editing, form, errors, message, saving,
     <dialog ref={dialogRef} className="cm-dialog" onCancel={onClose}>
       <form onSubmit={onSubmit} noValidate>
         <header className="cm-dialog-header">
-          <div><h2>{editing ? 'Edit customer details' : 'Register a customer'}</h2><p>Creating a directory record does not create sign-in credentials.</p></div>
+          <div><h2>{editing ? 'Edit customer details' : 'Register a customer'}</h2><p>New customer accounts must change their password when they first sign in.</p></div>
           <button type="button" className="cm-close" onClick={onClose} aria-label="Close form"><X size={19} /></button>
         </header>
         {message && <ErrorNotice>{message}</ErrorNotice>}

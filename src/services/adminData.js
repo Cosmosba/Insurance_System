@@ -9,11 +9,6 @@
 import { policies, payments, claims } from './customerData'
 import { getDepartments } from './departmentData'
 
-// ── System activity ───────────────────────────────────────────────────────────
-// Authoritative audit events will come from the backend.
-// This list is intentionally empty until real events are recorded.
-export const systemActivity = []
-
 // ── Org-wide summary (derived from available records) ────────────────────────
 export function getAdminSummary(totalDepartments = getDepartments().length, totalStaff = null) {
   const activePolicies    = policies.filter(p => p.status === 'Active').length

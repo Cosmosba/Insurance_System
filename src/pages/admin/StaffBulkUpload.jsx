@@ -125,7 +125,7 @@ export default function StaffBulkUpload({ open, onClose, onImported }) {
       const validRecords = preview.records
         .filter(record => record.status === 'valid')
         .map(record => ({ ...record.fields, rowNumber: record.rowNumber }))
-      const importResult = createStaffUsersBatch(validRecords, { confirmedRoleAssignment })
+      const importResult = await createStaffUsersBatch(validRecords, { confirmedRoleAssignment })
       setResult({
         imported: importResult.imported,
         skipped: preview.duplicates,

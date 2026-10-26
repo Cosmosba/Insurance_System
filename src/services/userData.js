@@ -2,12 +2,14 @@ import { getSession, getKnownStaffAccounts } from './mockAuth'
 import { getDepartments, setDepartmentManagerReference } from './departmentData'
 import { canAccessDepartment, hasPermission } from './rolePermissions'
 import { recordRoleAuditEvent } from './roleAudit'
+import { createPasswordCredential, generateDefaultPassword } from './passwordCredentials'
 
 const STORAGE_KEY = 'emple_staff_users_v1'
 const CHANGE_EVENT = 'emple:staff-users-updated'
 const USER_FIELDS = new Set([
   'id', 'firstName', 'lastName', 'email', 'phone', 'employeeId',
   'role', 'departmentId', 'status', 'createdAt', 'updatedAt', 'createdBy', 'authManaged',
+  'passwordSalt', 'passwordHash', 'mustChangePassword',
 ])
 
 export const STAFF_ROLES = [
@@ -124,10 +126,8 @@ function readStoredUsers() {
     !record
     || typeof record.id !== 'string'
     || !record.id.trim()
-    || typeof record.firstName !== 'string'
-    || !record.firstName.trim()
-    || typeof record.lastName !== 'string'
-    || !record.lastName.trim()
+    || (record.firstName !== undefined && typeof record.firstName !== 'string')
+    || (record.lastName !== undefined && typeof record.lastName !== 'string')
     || typeof record.email !== 'string'
     || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(record.email.trim())
     || !VALID_ROLES.has(record.role)
@@ -139,6 +139,9 @@ function readStoredUsers() {
     || (record.updatedAt !== undefined && record.updatedAt !== null && typeof record.updatedAt !== 'string')
     || (record.createdBy !== undefined && typeof record.createdBy !== 'string')
     || (record.authManaged !== undefined && typeof record.authManaged !== 'boolean')
+    || (record.passwordSalt !== undefined && typeof record.passwordSalt !== 'string')
+    || (record.passwordHash !== undefined && typeof record.passwordHash !== 'string')
+    || (record.mustChangePassword !== undefined && typeof record.mustChangePassword !== 'boolean')
   ))) {
     throw new UserDataError('Saved staff account data has an invalid format.')
   }
@@ -155,10 +158,18 @@ function readStoredUsers() {
     emails.add(email)
     if (employeeId) employeeIds.add(employeeId)
   }
-  const sanitized = records.map(record => Object.fromEntries(
-    Object.entries(record).filter(([key]) => USER_FIELDS.has(key)),
-  ))
-  if (records.some(record => Object.keys(record).some(key => !USER_FIELDS.has(key)))) {
+  const sanitized = records.map(record => ({
+    ...Object.fromEntries(Object.entries(record).filter(([key]) => USER_FIELDS.has(key))),
+    firstName: String(record.firstName ?? '').trim(),
+    lastName: String(record.lastName ?? '').trim(),
+  }))
+  if (records.some(record => (
+    Object.keys(record).some(key => !USER_FIELDS.has(key))
+    || typeof record.firstName !== 'string'
+    || record.firstName !== record.firstName.trim()
+    || typeof record.lastName !== 'string'
+    || record.lastName !== record.lastName.trim()
+  ))) {
     persistUsers(sanitized)
   }
   return sanitized
@@ -371,9 +382,15 @@ function evaluateStaffImport(records, users, departments) {
     let values = null
     try {
       values = validateUser(input, users)
+      if (values.role !== 'superadmin') {
+        generateDefaultPassword(values.firstName, values.lastName)
+      }
     } catch (error) {
-      if (!(error instanceof UserDataError)) throw error
-      Object.assign(fieldErrors, error.fieldErrors)
+      if (error instanceof UserDataError) {
+        Object.assign(fieldErrors, error.fieldErrors)
+      } else {
+        fieldErrors.lastName = error.message
+      }
     }
 
     if (input.role !== 'department_staff' && !roleAssignmentAllowed) {
@@ -487,10 +504,23 @@ function writeUserUpdate(existingUsers, nextUsers, affectedDepartments = []) {
       { cause: error, rollbackError },
     )
   }
+
+  for (const department of affectedDepartments) {
+    const previousManager = existingUsers.find(user => user.id === department.managerId)
+    recordCommittedAuditEvent({
+      action: 'Department manager assignment changed',
+      targetType: 'department',
+      targetId: department.id,
+      targetName: department.name,
+      details: `Manager unassigned after updating ${previousManager
+        ? `${previousManager.firstName} ${previousManager.lastName}`.trim()
+        : 'the assigned staff account'}.`,
+    })
+  }
 }
 
 export function getStaffUsers() {
-  return getAccessibleStaffUsers().map(user => ({ ...user }))
+  return getAccessibleStaffUsers().map(publicStaffUser)
 }
 
 export function getStaffUserById(id) {
@@ -500,6 +530,12 @@ export function getStaffUserById(id) {
 export function getStaffUserByEmail(email) {
   const normalized = normalizeEmail(email)
   return getStaffUsers().find(user => normalizeEmail(user.email) === normalized) ?? null
+}
+
+function publicStaffUser(user) {
+  return Object.fromEntries(Object.entries(user).filter(([key]) => (
+    !['passwordSalt', 'passwordHash', 'mustChangePassword'].includes(key)
+  )))
 }
 
 export function getStaffSummary(users = getStaffUsers(), departments = getDepartments()) {
@@ -607,7 +643,7 @@ export function previewStaffUserImport(records) {
   return evaluateStaffImport(records, getStoredUsers(), getDepartments())
 }
 
-export function createStaffUsersBatch(records, { confirmedRoleAssignment = false } = {}) {
+export async function createStaffUsersBatch(records, { confirmedRoleAssignment = false } = {}) {
   const session = requireSuperadminPermission('users.create')
   if (!Array.isArray(records) || records.length === 0) {
     throw new UserDataError('There are no valid staff records to import.')
@@ -629,14 +665,24 @@ export function createStaffUsersBatch(records, { confirmedRoleAssignment = false
   }
 
   const now = new Date().toISOString()
-  const users = evaluated.records.map(record => ({
-    id: createUserId(),
-    ...record.values,
-    createdAt: now,
-    updatedAt: now,
-    createdBy: session.email,
-    authManaged: false,
-  }))
+  const users = []
+  for (const record of evaluated.records) {
+    const credential = record.values.role === 'superadmin'
+      ? {}
+      : await createPasswordCredential(
+        generateDefaultPassword(record.values.firstName, record.values.lastName),
+      )
+    users.push({
+      id: createUserId(),
+      ...record.values,
+      ...credential,
+      mustChangePassword: record.values.role !== 'superadmin',
+      createdAt: now,
+      updatedAt: now,
+      createdBy: session.email,
+      authManaged: false,
+    })
+  }
   const existingUsers = getStoredUsers()
   const nextUsers = [...existingUsers, ...users]
   assertActiveSuperadminRemains(nextUsers)
@@ -669,6 +715,14 @@ export function createStaffUsersBatch(records, { confirmedRoleAssignment = false
         })
       }
     }
+    recordCommittedAuditEvent({
+      action: 'Staff bulk import completed',
+      targetType: 'user import',
+      targetId: `bulk-${Date.now()}`,
+      targetName: `${users.length} staff records`,
+      module: 'User Management',
+      details: `Bulk import performed by ${session.email}.`,
+    })
   } catch (error) {
     throw new UserDataError(
       error.message || 'Staff records were saved, but administrative history could not be updated.',
@@ -677,13 +731,20 @@ export function createStaffUsersBatch(records, { confirmedRoleAssignment = false
     )
   }
 
-  return { imported: users.length, users: users.map(user => ({ ...user })) }
+  return { imported: users.length, users: users.map(publicStaffUser) }
 }
 
-export function createStaffUser(input, { confirmedRoleChange = false } = {}) {
+export async function createStaffUser(input, { confirmedRoleChange = false } = {}) {
   const session = requireSuperadminPermission('users.create')
   const users = getStoredUsers()
   const values = validateUser(input, users)
+  if (values.role !== 'superadmin') {
+    try {
+      generateDefaultPassword(values.firstName, values.lastName)
+    } catch (error) {
+      throw new UserDataError(error.message, { lastName: error.message })
+    }
+  }
   if (values.role !== 'department_staff') {
     requireSuperadminPermission('roles.assign')
   }
@@ -691,9 +752,14 @@ export function createStaffUser(input, { confirmedRoleChange = false } = {}) {
     throw new UserDataError('Confirm this privileged Superadmin role assignment.', {}, { confirmedRoleChange: true })
   }
   const now = new Date().toISOString()
+  const credential = values.role === 'superadmin'
+    ? {}
+    : await createPasswordCredential(generateDefaultPassword(values.firstName, values.lastName))
   const user = {
     id: createUserId(),
     ...values,
+    ...credential,
+    mustChangePassword: values.role !== 'superadmin',
     createdAt: now,
     updatedAt: now,
     createdBy: session.email,
@@ -725,7 +791,7 @@ export function createStaffUser(input, { confirmedRoleChange = false } = {}) {
       details: `Department assigned: ${user.departmentId}`,
     })
   }
-  return { ...user }
+  return publicStaffUser(user)
 }
 
 export function updateStaffUser(id, input, {
@@ -770,6 +836,20 @@ export function updateStaffUser(id, input, {
   assertActiveSuperadminRemains(nextUsers)
   writeUserUpdate(users, nextUsers, affectedDepartments)
   const name = `${next.firstName} ${next.lastName}`.trim()
+  const profileFields = Object.keys(values).filter(key => (
+    key !== 'role'
+    && key !== 'departmentId'
+    && values[key] !== existing[key]
+  ))
+  if (profileFields.length) {
+    recordCommittedAuditEvent({
+      action: 'Staff account updated',
+      targetType: 'user',
+      targetId: id,
+      targetName: name,
+      details: `Updated fields: ${profileFields.join(', ')}`,
+    })
+  }
   if (values.role !== existing.role) {
     recordCommittedAuditEvent({
       action: 'Staff role assigned',
@@ -898,10 +978,22 @@ export function assignDepartmentManager(departmentId, managerId, { confirmedTran
     targetType: 'department',
     targetId: departmentId,
     targetName: department.name,
-    details: manager
-      ? `Manager assigned: ${manager.firstName} ${manager.lastName}`.trim()
-      : 'Manager unassigned',
+    details: [
+      `Manager assigned: ${manager.firstName} ${manager.lastName}`.trim(),
+      impact.existingManager
+        ? `Replaced manager: ${impact.existingManager.firstName} ${impact.existingManager.lastName}`.trim()
+        : '',
+    ].filter(Boolean).join('; '),
   })
+  for (const previousDepartment of departmentsToClear) {
+    recordCommittedAuditEvent({
+      action: 'Department manager assignment changed',
+      targetType: 'department',
+      targetId: previousDepartment.id,
+      targetName: previousDepartment.name,
+      details: `Manager reassigned to ${department.name}.`,
+    })
+  }
   return { ...nextManager }
 }
 

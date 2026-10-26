@@ -4,7 +4,8 @@ import {
   FileSearch, Clock, CheckCircle2, BadgeCheck,
   Search, ChevronRight, FilePlus, AlertTriangle,
 } from 'lucide-react'
-import { claims, getClaimSummary, formatGHS } from '../services/customerData'
+import { getSession } from '../services/mockAuth'
+import { getCustomerWorkspaceData, getClaimSummary, formatGHS } from '../services/customerData'
 import './MyClaims.css'
 
 const STATUS_FILTERS = ['All', 'Under Review', 'Approved', 'Rejected', 'Completed']
@@ -20,7 +21,8 @@ const statusBadge = {
 
 export default function MyClaims() {
   const navigate = useNavigate()
-  const summary  = getClaimSummary()
+  const { claims } = getCustomerWorkspaceData(getSession()?.email)
+  const summary  = getClaimSummary(claims)
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('All')
 
@@ -45,7 +47,7 @@ export default function MyClaims() {
       })
       .slice()
       .sort((a, b) => new Date(b.submitted) - new Date(a.submitted))
-  }, [search, filter])
+  }, [claims, search, filter])
 
   return (
     <div className="cl2-page">

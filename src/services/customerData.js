@@ -205,16 +205,23 @@ export const recentActivity = [
   { id: 5, event: 'Profile details updated',     ref: 'CUST-00412',date: '01 Jun 2025', type: 'profile'  },
 ]
 
+export function getCustomerWorkspaceData(email) {
+  if (String(email ?? '').trim().toLocaleLowerCase() === 'customer@emple.test') {
+    return { policies, payments, claims, recentActivity }
+  }
+  return { policies: [], payments: [], claims: [], recentActivity: [] }
+}
+
 // ── Currency formatter ────────────────────────────────────────────────────────
 export function formatGHS(amount) {
   return `GH₵ ${Number(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`
 }
 
 // ── Derived summary values (calculated from records above) ────────────────────
-export function getPaymentSummary() {
-  const paid       = payments.filter(p => p.status === 'Paid')
-  const upcoming   = payments.filter(p => p.status === 'Upcoming' || p.status === 'Due Soon')
-  const overdue    = payments.filter(p => p.status === 'Overdue' || p.status === 'Failed')
+export function getPaymentSummary(records = payments) {
+  const paid       = records.filter(p => p.status === 'Paid')
+  const upcoming   = records.filter(p => p.status === 'Upcoming' || p.status === 'Due Soon')
+  const overdue    = records.filter(p => p.status === 'Overdue' || p.status === 'Failed')
   const totalPaid  = paid.reduce((sum, p) => sum + p.amount, 0)
   const totalDue   = upcoming.reduce((sum, p) => sum + p.amount, 0)
   const totalOverdue = overdue.reduce((sum, p) => sum + p.amount, 0)
@@ -227,27 +234,27 @@ export function getPaymentSummary() {
   }
 }
 
-export function getClaimSummary() {
-  const total      = claims.length
-  const underReview = claims.filter(c => c.status === 'Under Review' || c.status === 'Pending').length
-  const approved   = claims.filter(c => c.status === 'Approved').length
-  const settled    = claims.filter(c => c.status === 'Completed' || c.status === 'Settled').length
-  const rejected   = claims.filter(c => c.status === 'Rejected').length
+export function getClaimSummary(records = claims) {
+  const total      = records.length
+  const underReview = records.filter(c => c.status === 'Under Review' || c.status === 'Pending').length
+  const approved   = records.filter(c => c.status === 'Approved').length
+  const settled    = records.filter(c => c.status === 'Completed' || c.status === 'Settled').length
+  const rejected   = records.filter(c => c.status === 'Rejected').length
   return { total, underReview, approved, settled, rejected }
 }
 
-export function getSummary() {
-  const totalPolicies    = policies.length
-  const activePolicies   = policies.filter(p => p.status === 'Active').length
-  const upcomingPayments = payments.filter(p => p.status !== 'Paid').length
-  const claimsInProgress = claims.filter(c => c.status === 'Under Review' || c.status === 'Pending').length
+export function getSummary(data = { policies, payments, claims }) {
+  const totalPolicies    = data.policies.length
+  const activePolicies   = data.policies.filter(p => p.status === 'Active').length
+  const upcomingPayments = data.payments.filter(p => p.status !== 'Paid').length
+  const claimsInProgress = data.claims.filter(c => c.status === 'Under Review' || c.status === 'Pending').length
   return { totalPolicies, activePolicies, upcomingPayments, claimsInProgress }
 }
 
-export function getPolicySummary() {
-  const total   = policies.length
-  const active  = policies.filter(p => p.status === 'Active').length
-  const pending = policies.filter(p => p.status === 'Pending').length
-  const expired = policies.filter(p => p.status === 'Lapsed' || p.status === 'Expired').length
+export function getPolicySummary(records = policies) {
+  const total   = records.length
+  const active  = records.filter(p => p.status === 'Active').length
+  const pending = records.filter(p => p.status === 'Pending').length
+  const expired = records.filter(p => p.status === 'Lapsed' || p.status === 'Expired').length
   return { total, active, pending, expired }
 }

@@ -186,7 +186,7 @@ export default function UserManagement() {
     setFormMessage('')
   }
 
-  function handleSave(event) {
+  async function handleSave(event) {
     event.preventDefault()
     setSaving(true)
     setFormErrors({})
@@ -232,7 +232,7 @@ export default function UserManagement() {
             ? window.confirm(`Create this account with the ${ROLE_LABELS[form.role]} role?`)
             : false
         if (form.role !== 'department_staff' && !confirmedRoleChange) return
-        createStaffUser(form, { confirmedRoleChange })
+        await createStaffUser(form, { confirmedRoleChange })
         setNotice({ type: 'success', message: 'Staff account added in this browser.' })
       }
       refreshDirectory()

@@ -130,7 +130,7 @@ export default function CustomerBulkUpload({ open, onClose, onImported }) {
       const validRecords = preview.records
         .filter(record => record.status === 'valid')
         .map(record => ({ ...record.fields, rowNumber: record.rowNumber }))
-      const importResult = importCustomerRecords(validRecords)
+      const importResult = await importCustomerRecords(validRecords)
       setResult({
         ...importResult,
         skipped: preview.duplicates + importResult.skipped,

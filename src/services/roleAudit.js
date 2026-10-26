@@ -11,6 +11,27 @@ export class RoleAuditError extends Error {
   }
 }
 
+function getEventModule({ action, targetType }) {
+  const normalizedAction = action.toLocaleLowerCase()
+  const normalizedTarget = targetType.toLocaleLowerCase()
+  if (
+    normalizedTarget.includes('role')
+    || normalizedTarget.includes('permission')
+    || normalizedAction.includes('role')
+    || normalizedAction.includes('permission')
+    || normalizedAction.includes('security')
+  ) {
+    return 'Security & Permissions'
+  }
+  if (normalizedAction.includes('department access')) return 'Security & Permissions'
+  if (normalizedTarget === 'department' || normalizedAction.includes('department')) return 'Departments'
+  if (normalizedTarget === 'customer') return 'Customer Management'
+  if (normalizedTarget === 'user') return 'User Management'
+  return normalizedTarget
+    ? normalizedTarget.replace(/(^\w|\s\w)/g, value => value.toLocaleUpperCase())
+    : 'Other'
+}
+
 function getStorage() {
   try {
     if (typeof window === 'undefined' || !window.localStorage) {
@@ -48,19 +69,23 @@ export function getRoleAuditEvents() {
     || typeof event.timestamp !== 'string'
     || (event.actor !== null && typeof event.actor !== 'string')
     || (event.details !== undefined && typeof event.details !== 'string')
+    || (event.module !== undefined && typeof event.module !== 'string')
+    || (event.status !== undefined && event.status !== null && typeof event.status !== 'string')
   ))) {
     throw new RoleAuditError('Saved administrative history has an invalid format.')
   }
   return events.slice(0, MAX_EVENTS).map(event => ({ ...event }))
 }
 
-export function recordRoleAuditEvent({ action, targetType, targetId, targetName, details = '' }) {
+export function recordRoleAuditEvent({ action, targetType, targetId, targetName, details = '', module, status = null }) {
   if (
     typeof action !== 'string' || !action.trim()
     || typeof targetType !== 'string' || !targetType.trim()
     || typeof targetId !== 'string' || !targetId.trim()
     || typeof targetName !== 'string' || !targetName.trim()
     || typeof details !== 'string'
+    || (module !== undefined && (typeof module !== 'string' || !module.trim()))
+    || (status !== null && typeof status !== 'string')
   ) {
     throw new RoleAuditError('Administrative history event is invalid.')
   }
@@ -72,6 +97,8 @@ export function recordRoleAuditEvent({ action, targetType, targetId, targetName,
     targetType: targetType.trim(),
     targetId: targetId.trim(),
     targetName: targetName.trim(),
+    module: typeof module === 'string' ? module.trim() : getEventModule({ action, targetType }),
+    status,
     timestamp: new Date().toISOString(),
     actor: typeof session?.email === 'string' ? session.email : null,
     details: details.trim(),

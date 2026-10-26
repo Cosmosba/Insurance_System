@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ShieldCheck, Download, AlertTriangle } from 'lucide-react'
-import { policies, payments, claims, formatGHS } from '../services/customerData'
+import { getSession } from '../services/mockAuth'
+import { getCustomerWorkspaceData, formatGHS } from '../services/customerData'
 import './MyPolicies.css'
 
 const policyStatusBadge = {
@@ -41,6 +42,7 @@ function DetailRow({ label, value }) {
 export default function PolicyDetail() {
   const { id }   = useParams()
   const navigate = useNavigate()
+  const { policies, payments, claims } = getCustomerWorkspaceData(getSession()?.email)
   const policy   = policies.find(p => p.id === id)
 
   if (!policy) {

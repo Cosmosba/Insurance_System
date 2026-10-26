@@ -6,7 +6,7 @@ import {
   Activity, ShieldCheck, Clock,
 } from 'lucide-react'
 import { getSession } from '../services/mockAuth'
-import { policies, payments, claims, recentActivity, getSummary, formatGHS } from '../services/customerData'
+import { getCustomerWorkspaceData, getSummary, formatGHS } from '../services/customerData'
 import './CustomerDashboard.css'
 
 // ── Status maps ───────────────────────────────────────────────────────────────
@@ -75,7 +75,8 @@ export default function CustomerDashboard() {
   const session  = getSession()
   const navigate = useNavigate()
   const [now, setNow] = useState(new Date())
-  const summary  = getSummary()
+  const { policies, payments, claims, recentActivity } = getCustomerWorkspaceData(session?.email)
+  const summary  = getSummary({ policies, payments, claims })
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000)

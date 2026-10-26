@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FileText, CheckCircle, Clock, XCircle, Search, ShieldCheck, ChevronRight } from 'lucide-react'
-import { policies, getPolicySummary } from '../services/customerData'
+import { getSession } from '../services/mockAuth'
+import { getCustomerWorkspaceData, getPolicySummary } from '../services/customerData'
 import './MyPolicies.css'
 
 const STATUS_FILTERS = ['All', 'Active', 'Pending', 'Lapsed']
@@ -21,7 +22,8 @@ const categoryBadge = {
 
 export default function MyPolicies() {
   const navigate = useNavigate()
-  const summary  = getPolicySummary()
+  const { policies } = getCustomerWorkspaceData(getSession()?.email)
+  const summary  = getPolicySummary(policies)
   const [search, setSearch]   = useState('')
   const [filter, setFilter]   = useState('All')
 
@@ -42,7 +44,7 @@ export default function MyPolicies() {
         p.category.toLowerCase().includes(q)
       return matchesFilter && matchesSearch
     })
-  }, [search, filter])
+  }, [policies, search, filter])
 
   return (
     <div className="mp-page">

@@ -4,7 +4,8 @@ import {
   Wallet, Clock, AlertCircle, CheckCircle2,
   Search, CreditCard, ChevronRight, CalendarClock,
 } from 'lucide-react'
-import { payments, getPaymentSummary, formatGHS } from '../services/customerData'
+import { getSession } from '../services/mockAuth'
+import { getCustomerWorkspaceData, getPaymentSummary, formatGHS } from '../services/customerData'
 import './Payments.css'
 
 const STATUS_FILTERS = ['All', 'Paid', 'Due Soon', 'Upcoming', 'Overdue']
@@ -19,7 +20,8 @@ const statusBadge = {
 
 export default function Payments() {
   const navigate = useNavigate()
-  const summary  = getPaymentSummary()
+  const { payments } = getCustomerWorkspaceData(getSession()?.email)
+  const summary  = getPaymentSummary(payments)
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('All')
 
@@ -67,7 +69,7 @@ export default function Payments() {
       })
       .slice()
       .sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate))
-  }, [search, filter])
+  }, [payments, search, filter])
 
   // Upcoming: not paid, sorted earliest first
   const upcoming = useMemo(() =>
@@ -75,7 +77,7 @@ export default function Payments() {
       .filter(p => p.status === 'Due Soon' || p.status === 'Upcoming' || p.status === 'Overdue')
       .slice()
       .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate)),
-  [])
+  [payments])
 
   return (
     <div className="py-page">
