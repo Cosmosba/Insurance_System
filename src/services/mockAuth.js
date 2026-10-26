@@ -13,6 +13,7 @@
  *   customer@emple.test  →  role: customer
  *   staff@emple.test     →  role: staff
  */
+import { getStoredCustomerByEmail, updateStoredCustomerProfile } from './customerRecordStore'
 
 const SESSION_KEY = 'emple_dev_session'
 const PROFILE_KEY = 'emple_dev_profile'
@@ -42,6 +43,13 @@ export function getKnownCustomerAccounts() {
   return Object.entries(DEMO_ACCOUNTS)
     .filter(([, account]) => account.role === 'customer')
     .map(([email, account]) => ({ email, name: account.name, role: account.role }))
+}
+
+export function getKnownCustomerProfiles() {
+  return getKnownCustomerAccounts()
+    .map(account => DEFAULT_PROFILES[account.email])
+    .filter(Boolean)
+    .map(profile => ({ ...profile }))
 }
 
 // Default profile data keyed by email.
@@ -123,14 +131,36 @@ export function savePhoto(dataUrl) {
 export function getProfile() {
   const session = getSession()
   if (!session) return null
+  let savedProfile = null
   try {
     const stored = sessionStorage.getItem(PROFILE_KEY)
     if (stored) {
       const all = JSON.parse(stored)
-      if (all[session.email]) return all[session.email]
+      if (all[session.email]) savedProfile = all[session.email]
     }
   } catch { /* ignore */ }
-  return DEFAULT_PROFILES[session.email] ?? null
+  const defaultProfile = DEFAULT_PROFILES[session.email]
+  if (!defaultProfile) return null
+  try {
+    const customer = getStoredCustomerByEmail(session.email)
+    if (customer) {
+      return {
+        ...defaultProfile,
+        ...savedProfile,
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+        email: customer.email,
+        phone: customer.phone,
+        altPhone: customer.altPhone,
+        address: customer.address,
+        ...customer,
+        customerId: customer.id,
+        accountStatus: customer.status,
+        accountSince: customer.registrationDate,
+      }
+    }
+  } catch { /* Directory validation is reported by customer administration. */ }
+  return { ...defaultProfile, ...savedProfile }
 }
 
 /**
@@ -156,6 +186,7 @@ export function saveProfile(updates) {
   }
 
   try {
+    updateStoredCustomerProfile(session.email, next)
     const stored = sessionStorage.getItem(PROFILE_KEY)
     const all    = stored ? JSON.parse(stored) : {}
     all[session.email] = next
@@ -182,7 +213,8 @@ export function saveProfile(updates) {
  * @returns {{ ok: true, session: object } | { ok: false, message: string }}
  */
 export function mockLogin(email, password) {
-  const account = DEMO_ACCOUNTS[email.trim().toLowerCase()]
+  const normalizedEmail = email.trim().toLowerCase()
+  const account = DEMO_ACCOUNTS[normalizedEmail]
 
   if (!account || password !== DEMO_PASSWORD) {
     return {
@@ -191,7 +223,21 @@ export function mockLogin(email, password) {
     }
   }
 
-  const session = { email: email.trim().toLowerCase(), role: account.role, name: account.name }
+  if (account.role === 'customer') {
+    try {
+      const customer = getStoredCustomerByEmail(normalizedEmail)
+      if (customer?.status === 'Inactive') {
+        return { ok: false, message: 'This customer account is inactive. Contact an administrator for assistance.' }
+      }
+      if (customer && customer.status !== 'Active') {
+        return { ok: false, message: 'Customer account data could not be verified. Contact an administrator.' }
+      }
+    } catch {
+      return { ok: false, message: 'Customer account data could not be verified. Contact an administrator.' }
+    }
+  }
+
+  const session = { email: normalizedEmail, role: account.role, name: account.name }
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(session))
   return { ok: true, session }
 }
@@ -203,7 +249,12 @@ export function mockLogin(email, password) {
 export function getSession() {
   try {
     const raw = sessionStorage.getItem(SESSION_KEY)
-    return raw ? JSON.parse(raw) : null
+    const session = raw ? JSON.parse(raw) : null
+    if (session?.role === 'customer') {
+      const customer = getStoredCustomerByEmail(session.email)
+      if (customer && customer.status !== 'Active') return null
+    }
+    return session
   } catch {
     return null
   }

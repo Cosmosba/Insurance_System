@@ -60,7 +60,12 @@ export const PERMISSION_CATALOG = [
   { id: 'roles.assign', name: 'Assign roles', description: 'Assign roles to authorised staff accounts.', category: 'Roles & Permissions', action: 'Assign', implemented: true },
   { id: 'permissions.manage', name: 'Manage permissions', description: 'Manage system permission profiles.', category: 'Roles & Permissions', action: 'Manage', implemented: true },
 
-  { id: 'customers.manage', name: 'Manage customer accounts', description: 'Manage customer accounts where that module is available.', category: 'Customer Management', action: 'Manage', implemented: false },
+  { id: 'customers.view', name: 'View customer records', description: 'View customer records, subject to assigned access scope.', category: 'Customer Management', action: 'View', implemented: true },
+  { id: 'customers.create', name: 'Register customers', description: 'Create customer directory records without provisioning sign-in credentials.', category: 'Customer Management', action: 'Create', implemented: true },
+  { id: 'customers.edit', name: 'Edit customer records', description: 'Edit customer contact and profile details.', category: 'Customer Management', action: 'Edit', implemented: true },
+  { id: 'customers.activate', name: 'Activate customer accounts', description: 'Activate an inactive customer account.', category: 'Customer Management', action: 'Activate', implemented: true },
+  { id: 'customers.deactivate', name: 'Deactivate customer accounts', description: 'Deactivate an active customer account.', category: 'Customer Management', action: 'Deactivate', implemented: true },
+  { id: 'customers.manage', name: 'Manage all customer accounts', description: 'Legacy full customer management permission.', category: 'Customer Management', action: 'Manage', implemented: true },
   { id: 'policies.view_own', name: 'View own policies', description: 'View policies belonging to the signed-in customer.', category: 'Policies', action: 'View own', implemented: true },
   { id: 'policies.manage', name: 'Manage policies', description: 'Manage policy records in authorised work areas.', category: 'Policies', action: 'Manage', implemented: false },
   { id: 'payments.view_own', name: 'View own payments', description: 'View payments belonging to the signed-in customer.', category: 'Payments', action: 'View own', implemented: true },
@@ -140,6 +145,12 @@ export const SENSITIVE_PERMISSIONS = new Set([
   'payments.manage',
   'claims.manage',
   'reports.department.view',
+  'customers.view',
+  'customers.create',
+  'customers.edit',
+  'customers.activate',
+  'customers.deactivate',
+  'customers.manage',
 ])
 
 export class RolePermissionError extends Error {

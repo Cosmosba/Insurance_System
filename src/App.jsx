@@ -18,7 +18,15 @@ import SuperadminDashboard from './pages/admin/SuperadminDashboard'
 import DepartmentsManagement from './pages/admin/DepartmentsManagement'
 import UserManagement from './pages/admin/UserManagement'
 import RolesPermissions from './pages/admin/RolesPermissions'
+import CustomerManagement from './pages/admin/CustomerManagement'
 import ProtectedRoute from './components/ProtectedRoute'
+import { getSession } from './services/mockAuth'
+
+function CustomerManagementLayout({ children }) {
+  return getSession()?.role === 'superadmin'
+    ? <SuperadminLayout>{children}</SuperadminLayout>
+    : <MainLayout>{children}</MainLayout>
+}
 
 export default function App() {
   return (
@@ -202,6 +210,28 @@ export default function App() {
               <SuperadminLayout>
                 <RolesPermissions />
               </SuperadminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/customers"
+          element={
+            <ProtectedRoute requiredPermission="customers.view">
+              <CustomerManagementLayout>
+                <CustomerManagement />
+              </CustomerManagementLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/customers/:id"
+          element={
+            <ProtectedRoute requiredPermission="customers.view">
+              <CustomerManagementLayout>
+                <CustomerManagement />
+              </CustomerManagementLayout>
             </ProtectedRoute>
           }
         />

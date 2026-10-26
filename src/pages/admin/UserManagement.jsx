@@ -2,9 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   AlertCircle, ArrowLeft, BriefcaseBusiness, Check, ChevronRight, CircleUserRound,
-  Eye, Filter, Mail, Pencil, Plus, Search, ShieldCheck, ToggleLeft, ToggleRight, X,
+  Eye, Filter, Mail, Pencil, Plus, Search, ShieldCheck, ToggleLeft, ToggleRight, Upload, X,
 } from 'lucide-react'
 import { getDepartments, subscribeToDepartments } from '../../services/departmentData'
+import { getSession } from '../../services/mockAuth'
+import { hasPermission } from '../../services/rolePermissions'
 import {
   createStaffUser,
   filterStaffUsers,
@@ -20,6 +22,7 @@ import {
   setStaffUserStatus,
   UserDataError,
 } from '../../services/userData'
+import StaffBulkUpload from './StaffBulkUpload'
 import './UserManagement.css'
 
 const EMPTY_FORM = {
@@ -100,6 +103,7 @@ export default function UserManagement() {
   const [formErrors, setFormErrors] = useState({})
   const [formMessage, setFormMessage] = useState('')
   const [saving, setSaving] = useState(false)
+  const [bulkUploadOpen, setBulkUploadOpen] = useState(false)
   const [pendingId, setPendingId] = useState(null)
   const [notice, setNotice] = useState(null)
 
@@ -136,6 +140,7 @@ export default function UserManagement() {
     validDepartmentIds: departments.map(department => department.id),
   }), [departments, filters, search, users])
   const activeDepartments = departments.filter(department => department.status === 'Active')
+  const canBulkUpload = hasPermission(getSession(), 'users.create')
 
   function clearFilters() {
     setSearch('')
@@ -437,9 +442,20 @@ export default function UserManagement() {
           <h1>User Management</h1>
           <p>Manage staff accounts, roles, department assignments, and account access.</p>
         </div>
-        <button type="button" className="um-button um-button--primary" onClick={openCreateForm}>
-          <Plus size={17} aria-hidden="true" /> Add Staff Member
-        </button>
+        <div className="um-header-actions">
+          {canBulkUpload && (
+            <button
+              type="button"
+              className="um-button um-button--secondary"
+              onClick={() => setBulkUploadOpen(true)}
+            >
+              <Upload size={16} aria-hidden="true" /> Bulk Upload
+            </button>
+          )}
+          <button type="button" className="um-button um-button--primary" onClick={openCreateForm}>
+            <Plus size={17} aria-hidden="true" /> Add Staff Member
+          </button>
+        </div>
       </header>
 
       {error && <ErrorPanel message={error} />}
@@ -587,6 +603,19 @@ export default function UserManagement() {
         )}
       </section>
       {userForm}
+      {canBulkUpload && (
+        <StaffBulkUpload
+          open={bulkUploadOpen}
+          onClose={() => setBulkUploadOpen(false)}
+          onImported={count => {
+            refreshDirectory()
+            setNotice({
+              type: 'success',
+              message: `${count} staff profile${count === 1 ? '' : 's'} added to the directory.`,
+            })
+          }}
+        />
+      )}
     </section>
   )
 }

@@ -14,7 +14,7 @@ const navItems = [
   { label: 'Departments',        icon: Building2,       path: '/admin/departments', permission: 'departments.view' },
   { label: 'User Management',    icon: Users,           path: '/admin/users', permission: 'users.view' },
   { label: 'Roles & Permissions',icon: ShieldCheck,     path: '/admin/roles-permissions', permission: 'roles.view' },
-  { label: 'Customer Management',icon: UserCheck,       path: '/admin/customers', permission: 'customers.manage' },
+  { label: 'Customer Management',icon: UserCheck,       path: '/admin/customers', permission: 'customers.view' },
   { label: 'System Activity',    icon: Activity,        path: '/admin/activity', permission: 'activity.view' },
   { label: 'Reports & Analytics',icon: BarChart2,       path: '/admin/reports', permission: 'reports.view' },
   { label: 'Settings',           icon: Settings,        path: '/admin/settings', permission: 'settings.manage' },
@@ -22,7 +22,7 @@ const navItems = [
 
 // Modules not yet implemented — navigating to these paths falls through to /login
 // via the catch-all route until each module is built.
-const IMPLEMENTED = new Set(['/admin/dashboard', '/admin/departments', '/admin/users', '/admin/roles-permissions'])
+const IMPLEMENTED = new Set(['/admin/dashboard', '/admin/departments', '/admin/users', '/admin/roles-permissions', '/admin/customers'])
 
 export default function SuperadminLayout({ children }) {
   const [drawerOpen, setDrawerOpen] = useState(false)

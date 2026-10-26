@@ -300,6 +300,135 @@ function validateUser(input, users, currentId = null) {
   }
 }
 
+function normalizeImportedRole(role) {
+  const normalized = String(role ?? '').trim().toLocaleLowerCase().replace(/[\s-]+/g, '_')
+  if (normalized === 'superadmin') return 'superadmin'
+  if (normalized === 'department_manager') return 'department_manager'
+  if (normalized === 'department_staff') return 'department_staff'
+  return String(role ?? '').trim()
+}
+
+function normalizeImportedStatus(status) {
+  const normalized = String(status ?? '').trim().toLocaleLowerCase()
+  if (normalized === 'active') return 'Active'
+  if (normalized === 'inactive') return 'Inactive'
+  return String(status ?? '').trim()
+}
+
+function evaluateStaffImport(records, users, departments) {
+  const sources = Array.isArray(records) ? records : []
+  const emailCounts = new Map()
+  const employeeIdCounts = new Map()
+  const existingEmails = new Set(users.map(user => normalizeEmail(user.email)))
+  const existingEmployeeIds = new Set(
+    users.map(user => normalizeEmployeeId(user.employeeId)).filter(Boolean),
+  )
+
+  for (const source of sources) {
+    const email = normalizeEmail(source?.email)
+    const employeeId = normalizeEmployeeId(source?.employeeId)
+    if (email) emailCounts.set(email, (emailCounts.get(email) ?? 0) + 1)
+    if (employeeId) employeeIdCounts.set(employeeId, (employeeIdCounts.get(employeeId) ?? 0) + 1)
+  }
+
+  const roleAssignmentAllowed = hasPermission(getSession(), 'roles.assign')
+  const fieldLabels = {
+    firstName: 'First name',
+    lastName: 'Last name',
+    email: 'Email',
+    phone: 'Phone',
+    employeeId: 'Employee ID',
+    role: 'Role',
+    departmentId: 'Department',
+    status: 'Status',
+  }
+
+  const evaluated = sources.map((source, index) => {
+    const departmentValue = String(source?.department ?? source?.departmentId ?? '').trim()
+    const normalizedDepartmentValue = departmentValue.toLocaleLowerCase()
+    const department = departmentValue
+      ? departments.find(record => (
+        record.id === departmentValue
+        || String(record.code ?? '').trim().toLocaleLowerCase() === normalizedDepartmentValue
+        || normalizeEmail(record.name) === normalizeEmail(departmentValue)
+      ))
+      : null
+    const input = {
+      firstName: source?.firstName,
+      lastName: source?.lastName,
+      email: source?.email,
+      phone: source?.phone,
+      employeeId: source?.employeeId,
+      role: normalizeImportedRole(source?.role),
+      departmentId: department?.id ?? null,
+      status: normalizeImportedStatus(source?.status),
+    }
+    const fieldErrors = {}
+    if (departmentValue && !department) {
+      fieldErrors.departmentId = 'Use a registered department name or code.'
+    }
+
+    let values = null
+    try {
+      values = validateUser(input, users)
+    } catch (error) {
+      if (!(error instanceof UserDataError)) throw error
+      Object.assign(fieldErrors, error.fieldErrors)
+    }
+
+    if (input.role !== 'department_staff' && !roleAssignmentAllowed) {
+      fieldErrors.role = 'You do not have permission to assign this role.'
+    }
+
+    const email = normalizeEmail(input.email)
+    const employeeId = normalizeEmployeeId(input.employeeId)
+    const duplicate = Boolean(
+      (email && (existingEmails.has(email) || emailCounts.get(email) > 1))
+      || (employeeId && (existingEmployeeIds.has(employeeId) || employeeIdCounts.get(employeeId) > 1)),
+    )
+    if (email && emailCounts.get(email) > 1) {
+      fieldErrors.email = 'This email appears more than once in the upload.'
+    }
+    if (employeeId && employeeIdCounts.get(employeeId) > 1) {
+      fieldErrors.employeeId = 'This employee ID appears more than once in the upload.'
+    }
+    if (email && existingEmails.has(email)) {
+      fieldErrors.email = 'This work email is already registered.'
+    }
+    if (employeeId && existingEmployeeIds.has(employeeId)) {
+      fieldErrors.employeeId = 'This employee ID is already in use.'
+    }
+
+    const errors = Object.entries(fieldErrors)
+      .map(([field, message]) => `${fieldLabels[field] ?? field}: ${message}`)
+    const status = duplicate ? 'duplicate' : errors.length ? 'invalid' : 'valid'
+    return {
+      rowNumber: Number.isInteger(source?.rowNumber) ? source.rowNumber : index + 2,
+      fields: {
+        firstName: String(source?.firstName ?? '').trim(),
+        lastName: String(source?.lastName ?? '').trim(),
+        email: String(source?.email ?? '').trim(),
+        phone: String(source?.phone ?? '').trim(),
+        employeeId: String(source?.employeeId ?? '').trim(),
+        department: departmentValue,
+        role: String(source?.role ?? '').trim(),
+        status: String(source?.status ?? '').trim(),
+      },
+      status,
+      errors,
+      values: status === 'valid' ? values : null,
+    }
+  })
+
+  return {
+    records: evaluated,
+    total: evaluated.length,
+    valid: evaluated.filter(record => record.status === 'valid').length,
+    invalid: evaluated.filter(record => record.status === 'invalid').length,
+    duplicates: evaluated.filter(record => record.status === 'duplicate').length,
+  }
+}
+
 function getManagerChanges(user, values) {
   if (!user) return []
   const losesManagerEligibility = (
@@ -468,6 +597,87 @@ export function getManagerAssignmentChanges(userId, input) {
   const user = users.find(record => record.id === userId)
   const values = validateUser(input, users, userId)
   return getManagerChanges(user, values)
+}
+
+export function previewStaffUserImport(records) {
+  requireSuperadminPermission('users.create')
+  if (!Array.isArray(records) || records.length === 0) {
+    throw new UserDataError('The upload contains no staff records to review.')
+  }
+  return evaluateStaffImport(records, getStoredUsers(), getDepartments())
+}
+
+export function createStaffUsersBatch(records, { confirmedRoleAssignment = false } = {}) {
+  const session = requireSuperadminPermission('users.create')
+  if (!Array.isArray(records) || records.length === 0) {
+    throw new UserDataError('There are no valid staff records to import.')
+  }
+
+  const evaluated = evaluateStaffImport(records, getStoredUsers(), getDepartments())
+  if (evaluated.valid !== evaluated.total) {
+    throw new UserDataError(
+      'Staff records changed since preview. Review the updated validation results before importing.',
+      {},
+      { records: evaluated.records },
+    )
+  }
+  if (
+    evaluated.records.some(record => record.values.role !== 'department_staff')
+    && !confirmedRoleAssignment
+  ) {
+    throw new UserDataError('Confirm the staff role assignment before importing.')
+  }
+
+  const now = new Date().toISOString()
+  const users = evaluated.records.map(record => ({
+    id: createUserId(),
+    ...record.values,
+    createdAt: now,
+    updatedAt: now,
+    createdBy: session.email,
+    authManaged: false,
+  }))
+  const existingUsers = getStoredUsers()
+  const nextUsers = [...existingUsers, ...users]
+  assertActiveSuperadminRemains(nextUsers)
+  persistUsers(nextUsers)
+
+  try {
+    for (const user of users) {
+      const targetName = `${user.firstName} ${user.lastName}`.trim()
+      recordCommittedAuditEvent({
+        action: 'Staff account created',
+        targetType: 'user',
+        targetId: user.id,
+        targetName,
+        details: `Role: ${user.role}; department: ${user.departmentId ?? 'Unassigned'}`,
+      })
+      recordCommittedAuditEvent({
+        action: 'Staff role assigned',
+        targetType: 'user',
+        targetId: user.id,
+        targetName,
+        details: `Role assigned: ${user.role}`,
+      })
+      if (user.departmentId) {
+        recordCommittedAuditEvent({
+          action: 'Department access changed',
+          targetType: 'user',
+          targetId: user.id,
+          targetName,
+          details: `Department assigned: ${user.departmentId}`,
+        })
+      }
+    }
+  } catch (error) {
+    throw new UserDataError(
+      error.message || 'Staff records were saved, but administrative history could not be updated.',
+      {},
+      { saved: true, importedCount: users.length, cause: error },
+    )
+  }
+
+  return { imported: users.length, users: users.map(user => ({ ...user })) }
 }
 
 export function createStaffUser(input, { confirmedRoleChange = false } = {}) {

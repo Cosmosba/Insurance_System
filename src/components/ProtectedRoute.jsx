@@ -14,6 +14,7 @@ import { hasPermission } from '../services/rolePermissions'
 const ROLE_HOME = {
   staff:      '/staff/dashboard',
   department_staff: '/staff/dashboard',
+  department_manager: '/staff/dashboard',
   customer:   '/customer/dashboard',
   superadmin: '/admin/dashboard',
 }
