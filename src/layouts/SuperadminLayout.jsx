@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { clearSession, getSession } from '../services/mockAuth'
 import { hasPermission } from '../services/rolePermissions'
+import useOrganizationName from '../components/useOrganizationName'
 import './SuperadminLayout.css'
 
 const navItems = [
@@ -22,11 +23,12 @@ const navItems = [
 
 // Modules not yet implemented — navigating to these paths falls through to /login
 // via the catch-all route until each module is built.
-const IMPLEMENTED = new Set(['/admin/dashboard', '/admin/departments', '/admin/users', '/admin/roles-permissions', '/admin/customers', '/admin/system-activity'])
+const IMPLEMENTED = new Set(['/admin/dashboard', '/admin/departments', '/admin/users', '/admin/roles-permissions', '/admin/customers', '/admin/system-activity', '/admin/reports', '/admin/settings'])
 
 export default function SuperadminLayout({ children }) {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [session, setSession]       = useState(() => getSession())
+  const organizationName = useOrganizationName()
   const navigate  = useNavigate()
   const location  = useLocation()
 
@@ -90,7 +92,7 @@ export default function SuperadminLayout({ children }) {
         <div className="sal-brand">
           <Shield size={24} className="sal-brand-icon" aria-hidden="true" />
           <div className="sal-brand-text">
-            emPLE Life Insurance
+            {organizationName}
             <span>Admin Console</span>
           </div>
           <button

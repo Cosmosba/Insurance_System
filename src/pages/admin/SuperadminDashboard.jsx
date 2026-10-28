@@ -6,6 +6,7 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import { getSession } from '../../services/mockAuth'
+import useOrganizationName from '../../components/useOrganizationName'
 import { hasPermission } from '../../services/rolePermissions'
 import { getAdminSummary } from '../../services/adminData'
 import { getRoleAuditEvents, subscribeToRoleAuditEvents } from '../../services/roleAudit'
@@ -63,6 +64,7 @@ function safeDepartmentStaffCount(departmentId) {
 }
 
 export default function SuperadminDashboard() {
+  const organizationName = useOrganizationName()
   const navigate = useNavigate()
   const session  = getSession()
   const [departmentState, setDepartmentState] = useState(() => {
@@ -172,7 +174,7 @@ export default function SuperadminDashboard() {
           <h1 className="sa-title">
             Welcome, {session?.name ?? 'Administrator'}
           </h1>
-          <p className="sa-subtitle">Organisation-wide overview — emPLE Life Insurance.</p>
+          <p className="sa-subtitle">Organisation-wide overview — {organizationName}.</p>
         </div>
         <span className="sa-clock" aria-label="Current date and time" aria-live="polite">
           {formatDateTime(now)}

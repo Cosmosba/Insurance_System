@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Shield, LayoutDashboard, Users, FileText, CreditCard, AlertCircle, Settings, LogOut } from 'lucide-react'
 import { getSession } from '../services/mockAuth'
 import { hasPermission } from '../services/rolePermissions'
+import useOrganizationName from './useOrganizationName'
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, active: true },
@@ -16,6 +17,7 @@ export default function Sidebar({ isOpen, onClose, onLogout }) {
   const location = useLocation()
   const session = getSession()
   const canManageCustomers = hasPermission(session, 'customers.view')
+  const organizationName = useOrganizationName()
 
   return (
     <>
@@ -24,7 +26,7 @@ export default function Sidebar({ isOpen, onClose, onLogout }) {
         <div className="sidebar-brand">
           <Shield size={28} className="sidebar-brand-icon" aria-hidden="true" />
           <div className="sidebar-brand-name">
-            Emple Life Insurance
+            {organizationName}
             <span>Management System</span>
           </div>
         </div>

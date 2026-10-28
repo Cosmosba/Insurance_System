@@ -5,6 +5,11 @@ built around apple green (`#8DB600`), white, light neutral backgrounds, and
 charcoal text. Use frosted surfaces to establish hierarchy; do not make every
 element translucent or trade readability for blur.
 
+The shared appearance preference is applied through `data-theme` on the
+document root. Theme choices are stored per signed-in email in this browser;
+new authenticated shells should use `ThemeProvider` and `useTheme` rather than
+adding page-local theme state or storage.
+
 ## Reuse before adding
 
 - Inspect existing layouts and page styles before creating a new component.

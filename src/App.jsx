@@ -21,7 +21,10 @@ import UserManagement from './pages/admin/UserManagement'
 import RolesPermissions from './pages/admin/RolesPermissions'
 import CustomerManagement from './pages/admin/CustomerManagement'
 import SystemActivity from './pages/admin/SystemActivity'
+import ReportsAnalytics from './pages/admin/ReportsAnalytics'
+import Settings from './pages/admin/Settings'
 import ProtectedRoute from './components/ProtectedRoute'
+import ThemeProvider from './components/ThemeProvider'
 import { getSession } from './services/mockAuth'
 import './styles/glass-system.css'
 
@@ -33,6 +36,7 @@ function CustomerManagementLayout({ children }) {
 
 export default function App() {
   return (
+    <ThemeProvider>
     <BrowserRouter>
       <Routes>
         {/* Public */}
@@ -230,6 +234,28 @@ export default function App() {
         />
 
         <Route
+          path="/admin/reports"
+          element={
+            <ProtectedRoute requiredRole="superadmin" requiredPermission="reports.view">
+              <SuperadminLayout>
+                <ReportsAnalytics />
+              </SuperadminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/settings"
+          element={
+            <ProtectedRoute requiredRole="superadmin" requiredPermission="settings.manage">
+              <SuperadminLayout>
+                <Settings />
+              </SuperadminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/admin/customers"
           element={
             <ProtectedRoute requiredPermission="customers.view">
@@ -264,5 +290,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
+    </ThemeProvider>
   )
 }

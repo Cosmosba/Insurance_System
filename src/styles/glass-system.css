@@ -371,3 +371,136 @@ body {
     animation-iteration-count: 1 !important;
   }
 }
+
+:root[data-theme='night'] {
+  color-scheme: dark;
+  --color-primary: #a6ce24;
+  --color-primary-dark: #bedc62;
+  --color-white: #f0f3eb;
+  --color-bg-light: #171d17;
+  --color-charcoal: #e8eee2;
+  --color-text: #d3ddce;
+  --color-text-muted: #aab6a4;
+  --color-border: #414b3c;
+  --glass-surface: rgba(37, 45, 36, 0.94);
+  --glass-surface-strong: rgba(43, 52, 42, 0.98);
+  --glass-surface-subtle: rgba(31, 39, 31, 0.94);
+  --glass-border: rgba(207, 220, 196, 0.12);
+  --glass-outline: rgba(184, 207, 144, 0.2);
+  --glass-highlight: rgba(255, 255, 255, 0.035);
+  --glass-shadow: 0 12px 32px rgba(0, 0, 0, 0.24);
+  --glass-shadow-raised: 0 18px 42px rgba(0, 0, 0, 0.34);
+}
+
+:root[data-theme='night'] body {
+  background:
+    radial-gradient(ellipse at 8% 0%, rgba(141, 182, 0, 0.09), transparent 35%),
+    radial-gradient(ellipse at 100% 14%, rgba(91, 112, 57, 0.12), transparent 32%),
+    var(--color-bg-light);
+  color: var(--color-text);
+}
+
+:root[data-theme='night'] :is(.app-layout, .cl-layout, .sal-layout) {
+  background:
+    radial-gradient(ellipse at 90% 0%, rgba(141, 182, 0, 0.07), transparent 34%),
+    linear-gradient(145deg, #1a211a 0%, #171d17 100%);
+}
+
+:root[data-theme='night'] :is(.app-content, .cl-content, .sal-content) {
+  color: var(--color-text);
+}
+
+:root[data-theme='night'] :is(.cl-sidebar, .cl-topbar, .sal-topheader) {
+  background: rgba(31, 39, 31, 0.96);
+  border-color: var(--glass-border);
+}
+
+:root[data-theme='night'] .sal-sidebar,
+:root[data-theme='night'] .sal-topbar {
+  background: rgba(27, 35, 27, 0.98);
+  border-color: var(--glass-border);
+}
+
+:root[data-theme='night'] :is(
+  .summary-card, .cd-card, .sa-card, .mp-card, .cl2-card, .py-card,
+  .um-summary-card, .cm-summary-card, .dm-summary-card, .rp-summary-card,
+  .pf-hero-card, .py-upcoming-item, .um-card, .cm-card, .dm-card,
+  .rp-table-wrap, .rp-matrix-wrap, .table-wrapper, .cd-table-wrap,
+  .sa-table-wrap, .um-table-wrap, .cm-directory, .cm-table-wrap,
+  .dm-table-wrap, .mp-table-wrap, .cl2-table-wrap, .py-table-wrap,
+  .um-dialog, .cm-dialog, .login-card, .password-card,
+  .settings-header, .settings-section
+) {
+  border-color: var(--glass-outline);
+  background: var(--glass-surface);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+}
+
+:root[data-theme='night'] :is(
+  .um-search, .um-filter, .cm-search, .cm-select, .dm-search, .dm-filter,
+  .form-input, .mp-search, .cl2-search, .py-search, .rp-search,
+  .um-form-field input, .um-form-field select, .cm-dialog input,
+  .cm-dialog select, .cm-dialog textarea, .dm-dialog input, .dm-dialog select,
+  .dm-dialog textarea, .rp-page input, .rp-page select, .rp-page textarea,
+  .settings-field input, .settings-field select
+) {
+  border-color: var(--glass-outline);
+  background-color: var(--glass-surface-strong);
+  color: var(--color-charcoal);
+}
+
+:root[data-theme='night'] :is(
+  .activity-table thead, .cd-table thead, .sa-table thead, .rp-table thead,
+  .um-table th, .cm-table th, .dm-table th
+) {
+  background: rgba(65, 78, 58, 0.72);
+  color: var(--color-charcoal);
+}
+
+:root[data-theme='night'] :is(
+  .activity-table td, .cd-table td, .sa-table td, .rp-table td,
+  .um-table td, .cm-table td, .dm-table td
+) {
+  border-color: rgba(184, 207, 144, 0.16);
+  color: var(--color-text);
+}
+
+:root[data-theme='night'] :is(
+  h1, h2, h3, h4, .settings-theme-copy strong, .settings-facts dd,
+  .settings-export-row strong
+) {
+  color: var(--color-charcoal);
+}
+
+:root[data-theme='night'] :is(
+  p, .settings-header p, .settings-section-heading p, .settings-info-panel p,
+  .settings-export-row p, .settings-facts dt, .settings-theme-copy small
+) {
+  color: var(--color-text-muted);
+}
+
+:root[data-theme='night'] .login-card {
+  border-color: var(--glass-outline);
+  background: var(--glass-surface);
+}
+
+:root[data-theme='night'] .password-card {
+  border-color: var(--glass-outline);
+  background: var(--glass-surface);
+}
+
+:root[data-theme='night'] .settings-button--primary {
+  color: #172000;
+}
+
+:root[data-theme='night'] .settings-button--secondary {
+  border-color: var(--glass-outline);
+  background: var(--glass-surface-strong);
+  color: var(--color-charcoal);
+}
+
+:root[data-theme='night'] .settings-info-panel,
+:root[data-theme='night'] .settings-export-row {
+  border-color: var(--glass-outline);
+  background: var(--glass-surface-subtle);
+}

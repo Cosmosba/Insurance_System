@@ -73,11 +73,11 @@ export const PERMISSION_CATALOG = [
   { id: 'claims.view_own', name: 'View own claims', description: 'View claims belonging to the signed-in customer.', category: 'Claims', action: 'View own', implemented: true },
   { id: 'claims.submit_own', name: 'Submit own claims', description: 'Submit a claim for the signed-in customer.', category: 'Claims', action: 'Submit own', implemented: true },
   { id: 'claims.manage', name: 'Manage claims', description: 'Review and manage claims in authorised work areas.', category: 'Claims', action: 'Manage', implemented: false },
-  { id: 'reports.view', name: 'View organisation reports', description: 'View organisation-wide reports where available.', category: 'Reports', action: 'View', implemented: false },
+  { id: 'reports.view', name: 'View organisation reports', description: 'View company-wide customer, workforce, department, and activity reports.', category: 'Reports', action: 'View', implemented: true },
   { id: 'reports.department.view', name: 'View department reports', description: 'View reports limited to authorised departments.', category: 'Reports', action: 'View department', implemented: false },
   { id: 'profile.view_own', name: 'View own profile', description: 'View the signed-in customer’s profile.', category: 'Customer Profile', action: 'View own', implemented: true },
   { id: 'profile.edit_own', name: 'Edit own profile', description: 'Edit the signed-in customer’s permitted profile fields.', category: 'Customer Profile', action: 'Edit own', implemented: true },
-  { id: 'settings.manage', name: 'Manage system settings', description: 'Change organisation-wide settings where available.', category: 'System Settings', action: 'Manage', implemented: false },
+  { id: 'settings.manage', name: 'Manage system settings', description: 'Change organization settings and personal appearance preferences.', category: 'System Settings', action: 'Manage', implemented: true },
   { id: 'activity.view', name: 'View administrative activity', description: 'View recorded administrative activity.', category: 'Audit & Activity Logs', action: 'View', implemented: true },
 ]
 

@@ -4,6 +4,7 @@ import {
   LayoutDashboard, FileText, CreditCard, AlertCircle, User, LogOut, Menu, X, Shield,
 } from 'lucide-react'
 import { clearSession, getSession, getPhoto } from '../services/mockAuth'
+import useOrganizationName from '../components/useOrganizationName'
 import './CustomerLayout.css'
 
 const navItems = [
@@ -15,6 +16,7 @@ const navItems = [
 ]
 
 export default function CustomerLayout({ children }) {
+  const organizationName = useOrganizationName()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [session, setSession] = useState(() => getSession())
   const [sidebarPhoto, setSidebarPhoto] = useState(() => getPhoto())
@@ -58,7 +60,7 @@ export default function CustomerLayout({ children }) {
         </button>
         <div className="cl-topbar-brand">
           <img src="/favicon.png" alt="" className="cl-topbar-favicon" aria-hidden="true" />
-          <span>Emple Life Insurance</span>
+          <span>{organizationName}</span>
         </div>
       </div>
 
@@ -81,7 +83,7 @@ export default function CustomerLayout({ children }) {
         <div className="cl-brand">
           <Shield size={26} className="cl-brand-icon" aria-hidden="true" />
           <div className="cl-brand-text">
-            Emple Life Insurance
+            {organizationName}
             <span>Customer Portal</span>
           </div>
           <button
