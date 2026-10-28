@@ -12,9 +12,9 @@ adding page-local theme state or storage.
 
 Customer regional display preferences (date format and clock format) are stored
 separately per signed-in email in this browser through
-`src/services/customerPreferences.js`. Customer-facing date fields should use
-`formatCustomerDate` and subscribe through `useCustomerPreferences` so updates
-apply without changing stored dates or the organization time zone. The
+`src/features/customer/services/customerPreferences.js`. Customer-facing date
+fields should use `formatCustomerDate` and subscribe through
+`useCustomerPreferences` so updates apply without changing stored dates or the organization time zone. The
 dashboard clock retains the organization time zone while honoring the
 customer's 12/24-hour preference. These browser preferences do not synchronize
 between devices.
