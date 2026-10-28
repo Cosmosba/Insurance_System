@@ -1,8 +1,10 @@
 /* ── Layout shell ────────────────────────────────────── */
 .cl-layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   width: 100%;
+  overflow: hidden;
   background: var(--color-bg-light);
 }
 
@@ -68,13 +70,15 @@
 /* ── Sidebar ─────────────────────────────────────────── */
 .cl-sidebar {
   width: var(--color-sidebar-width);
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   background: var(--color-white);
   border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 150;
 }
 
@@ -131,8 +135,10 @@
 /* ── Nav ─────────────────────────────────────────────── */
 .cl-nav {
   flex: 1;
+  min-height: 0;
   padding: 16px 12px;
   overflow-y: auto;
+  overscroll-behavior-y: contain;
 }
 
 .cl-nav-label {
@@ -294,8 +300,12 @@
 .cl-content {
   flex: 1;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   padding: 40px 36px;
   background: var(--color-bg-light);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
 }
 
 /* ── Responsive ──────────────────────────────────────── */
@@ -313,6 +323,7 @@
     top: 0;
     left: 0;
     height: 100vh;
+    height: 100dvh;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
     box-shadow: 4px 0 16px rgba(0,0,0,0.12);
@@ -327,6 +338,7 @@
   }
 
   .cl-content {
+    height: 100%;
     padding: 72px 20px 32px;
   }
 }
