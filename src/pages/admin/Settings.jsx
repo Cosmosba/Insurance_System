@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
-  Building2, Check, Download, Info, Moon, Save, ShieldCheck, Sun, Bell,
+  Building2, Check, Download, Info, Save, ShieldCheck, Bell, Sun,
 } from 'lucide-react'
 import packageInfo from '../../../package.json'
-import { useTheme } from '../../components/ThemeContext'
+import ThemeSelector from '../../components/ThemeSelector'
 import { getCustomerDirectory, subscribeToCustomerDirectory } from '../../services/customerDirectoryData'
 import { getDepartments, subscribeToDepartments } from '../../services/departmentData'
 import {
@@ -72,15 +72,12 @@ function formatSavedAt(value, settings) {
 }
 
 export default function Settings() {
-  const { theme, setTheme } = useTheme()
   const [initialSettings] = useState(getInitialSettings)
   const [settings, setSettings] = useState(initialSettings.settings)
   const [form, setForm] = useState(initialSettings.settings)
   const [settingsError, setSettingsError] = useState(initialSettings.error)
   const [saving, setSaving] = useState(false)
   const [feedback, setFeedback] = useState(null)
-  const [themeError, setThemeError] = useState('')
-  const [themeFeedback, setThemeFeedback] = useState('')
   const [exportError, setExportError] = useState('')
   const [initialCounts] = useState(getInitialCounts)
   const [counts, setCounts] = useState(initialCounts.counts)
@@ -154,17 +151,6 @@ export default function Settings() {
       }
     } finally {
       setSaving(false)
-    }
-  }
-
-  function selectTheme(nextTheme) {
-    setThemeError('')
-    setThemeFeedback('')
-    try {
-      setTheme(nextTheme)
-      setThemeFeedback(`${nextTheme === 'day' ? 'Day' : 'Night'} Mode saved for this account in this browser.`)
-    } catch (error) {
-      setThemeError(error.message || 'Your appearance preference could not be saved.')
     }
   }
 
@@ -292,40 +278,7 @@ export default function Settings() {
             <p>This preference belongs to your signed-in account on this browser.</p>
           </div>
         </div>
-        <div className="settings-theme-options" role="group" aria-label="Choose appearance">
-          <button
-            type="button"
-            className={`settings-theme-card settings-theme-card--day${theme === 'day' ? ' settings-theme-card--selected' : ''}`}
-            onClick={() => selectTheme('day')}
-            aria-pressed={theme === 'day'}
-          >
-            <span className="settings-theme-preview settings-theme-preview--day" aria-hidden="true">
-              <i /><i /><i />
-            </span>
-            <span className="settings-theme-copy">
-              <strong><Sun size={17} aria-hidden="true" /> Day Mode</strong>
-              <small>Light surfaces and the familiar emPLE green.</small>
-            </span>
-            {theme === 'day' && <Check className="settings-theme-check" size={18} aria-label="Selected" />}
-          </button>
-          <button
-            type="button"
-            className={`settings-theme-card settings-theme-card--night${theme === 'night' ? ' settings-theme-card--selected' : ''}`}
-            onClick={() => selectTheme('night')}
-            aria-pressed={theme === 'night'}
-          >
-            <span className="settings-theme-preview settings-theme-preview--night" aria-hidden="true">
-              <i /><i /><i />
-            </span>
-            <span className="settings-theme-copy">
-              <strong><Moon size={17} aria-hidden="true" /> Night Mode</strong>
-              <small>Dark, low-glare surfaces with readable contrast.</small>
-            </span>
-            {theme === 'night' && <Check className="settings-theme-check" size={18} aria-label="Selected" />}
-          </button>
-        </div>
-        {themeError && <p className="settings-message settings-message--error" role="alert">{themeError}</p>}
-        {themeFeedback && <p className="settings-message settings-message--success" role="status">{themeFeedback}</p>}
+        <ThemeSelector />
       </section>
 
       <section className="settings-section" aria-labelledby="settings-access-heading">

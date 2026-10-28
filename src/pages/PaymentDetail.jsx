@@ -2,6 +2,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, CreditCard, AlertTriangle, FileText } from 'lucide-react'
 import { getSession } from '../services/mockAuth'
 import { getCustomerWorkspaceData, formatGHS } from '../services/customerData'
+import useCustomerPreferences from '../hooks/useCustomerPreferences'
+import { formatCustomerDate } from '../services/customerPreferences'
 import './Payments.css'
 
 const statusBadge = {
@@ -24,6 +26,7 @@ function DetailRow({ label, value }) {
 export default function PaymentDetail() {
   const { ref }  = useParams()
   const navigate = useNavigate()
+  const { preferences } = useCustomerPreferences()
   const { payments, policies } = getCustomerWorkspaceData(getSession()?.email)
   const payment  = payments.find(p => p.ref === ref)
 
@@ -85,8 +88,8 @@ export default function PaymentDetail() {
             <DetailRow label="Policy Number"     value={payment.policyId} />
             <DetailRow label="Coverage Period"   value={payment.period} />
             <DetailRow label="Amount"            value={formatGHS(payment.amount)} />
-            <DetailRow label="Due Date"          value={payment.dueDate} />
-            <DetailRow label="Date Paid"         value={payment.paidDate ?? '—'} />
+            <DetailRow label="Due Date"          value={formatCustomerDate(payment.dueDate, preferences)} />
+            <DetailRow label="Date Paid"         value={payment.paidDate ? formatCustomerDate(payment.paidDate, preferences) : '—'} />
             <DetailRow label="Payment Method"    value={payment.method ?? '—'} />
             <DetailRow label="Policyholder"      value={policy?.policyholder ?? '—'} />
           </div>

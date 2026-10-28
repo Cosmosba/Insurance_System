@@ -1,6 +1,8 @@
 /* ── Shell ───────────────────────────────────────────── */
 .cd-dashboard {
   display: flex;
+  width: 100%;
+  min-width: 0;
   flex-direction: column;
   gap: 32px;
   max-width: 1060px;
@@ -9,10 +11,26 @@
 /* ── Welcome header ──────────────────────────────────── */
 .cd-header {
   display: flex;
-  align-items: flex-start;
+  min-width: 0;
+  align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 20px;
   flex-wrap: wrap;
+}
+
+.cd-header-welcome {
+  min-width: 0;
+  flex: 1 1 320px;
+}
+
+.cd-header-tools {
+  display: flex;
+  min-width: 0;
+  flex: 0 1 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-left: auto;
 }
 
 .cd-title {
@@ -20,6 +38,7 @@
   font-weight: 700;
   color: var(--color-charcoal);
   margin-bottom: 4px;
+  overflow-wrap: anywhere;
 }
 
 .cd-subtitle {
@@ -28,10 +47,48 @@
 }
 
 .cd-date {
+  min-width: 0;
   font-size: 13px;
   color: var(--color-text-muted);
   white-space: nowrap;
-  padding-top: 4px;
+  text-align: right;
+}
+
+.cd-header-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.cd-header-action {
+  display: inline-grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--glass-outline);
+  border-radius: 12px;
+  background: var(--glass-surface);
+  box-shadow: 0 3px 10px rgba(38, 49, 38, 0.045);
+  color: var(--color-primary-dark);
+  transition:
+    transform var(--motion-fast),
+    color var(--motion-fast),
+    background var(--motion-fast),
+    box-shadow var(--motion-fast);
+}
+
+.cd-header-action:hover {
+  transform: translateY(-1px);
+  background: var(--glass-surface-strong);
+  box-shadow: var(--glass-shadow);
+  color: var(--color-primary);
+}
+
+.cd-header-action:focus-visible {
+  outline: 3px solid rgba(141, 182, 0, 0.36);
+  outline-offset: 2px;
 }
 
 /* ── Section scaffolding ─────────────────────────────── */
@@ -394,6 +451,11 @@
 
 /* ── Responsive ──────────────────────────────────────── */
 @media (max-width: 900px) {
+  .cd-header-tools {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+  }
+
   .cd-cards-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -411,8 +473,33 @@
   }
   .cd-header {
     flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
   }
+
+  .cd-header-welcome {
+    flex: 0 1 auto;
+  }
+
+  .cd-header-tools {
+    align-items: stretch;
+    flex: 0 1 auto;
+    flex-direction: column-reverse;
+    gap: 10px;
+    margin-left: 0;
+  }
+
   .cd-date {
-    padding-top: 0;
+    white-space: normal;
+    text-align: left;
+  }
+
+  .cd-header-actions {
+    justify-content: flex-end;
+  }
+
+  .cd-header-action {
+    width: 44px;
+    height: 44px;
   }
 }

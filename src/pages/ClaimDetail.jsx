@@ -2,6 +2,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, FileSearch, AlertTriangle, FileText, CheckCircle2, Circle } from 'lucide-react'
 import { getSession } from '../services/mockAuth'
 import { getCustomerWorkspaceData, formatGHS } from '../services/customerData'
+import useCustomerPreferences from '../hooks/useCustomerPreferences'
+import { formatCustomerDate } from '../services/customerPreferences'
 import './MyClaims.css'
 
 const statusBadge = {
@@ -25,6 +27,7 @@ function DetailRow({ label, value }) {
 export default function ClaimDetail() {
   const { ref }  = useParams()
   const navigate = useNavigate()
+  const { preferences } = useCustomerPreferences()
   const { claims, policies } = getCustomerWorkspaceData(getSession()?.email)
   const claim    = claims.find(c => c.ref === ref)
 
@@ -94,7 +97,7 @@ export default function ClaimDetail() {
                 </div>
                 <div className="cd3-step-body">
                   <span className="cd3-step-label">{step.stage}</span>
-                  {step.date && <span className="cd3-step-date">{step.date}</span>}
+                  {step.date && <span className="cd3-step-date">{formatCustomerDate(step.date, preferences)}</span>}
                 </div>
                 {i < claim.statusHistory.length - 1 && (
                   <div className={`cd3-connector${step.done ? ' cd3-connector--done' : ''}`} aria-hidden="true" />
@@ -118,8 +121,8 @@ export default function ClaimDetail() {
             <DetailRow label="Policy"          value={claim.policyName} />
             <DetailRow label="Policy Number"   value={claim.policyId} />
             <DetailRow label="Claim Amount"    value={claim.amount != null ? formatGHS(claim.amount) : '—'} />
-            <DetailRow label="Date Reported"   value={claim.submitted} />
-            <DetailRow label="Last Updated"    value={claim.lastUpdated ?? '—'} />
+            <DetailRow label="Date Reported"   value={formatCustomerDate(claim.submitted, preferences)} />
+            <DetailRow label="Last Updated"    value={claim.lastUpdated ? formatCustomerDate(claim.lastUpdated, preferences) : '—'} />
           </div>
           {claim.description && (
             <div className="cd3-description">

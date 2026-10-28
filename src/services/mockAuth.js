@@ -131,7 +131,7 @@ export function savePhoto(dataUrl) {
     const all    = stored ? JSON.parse(stored) : {}
     all[session.email] = dataUrl
     sessionStorage.setItem(PHOTO_KEY, JSON.stringify(all))
-    window.dispatchEvent(new Event('emple:session-updated'))
+    window.dispatchEvent(new Event(SESSION_UPDATED_EVENT))
     return { ok: true }
   } catch {
     return { ok: false, message: 'Unable to save photo. Please try a smaller image.' }
@@ -214,7 +214,7 @@ export function saveProfile(updates) {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(updatedSession))
 
     // Notify other components in the same tab that the session has changed
-    window.dispatchEvent(new Event('emple:session-updated'))
+    window.dispatchEvent(new Event(SESSION_UPDATED_EVENT))
 
     return { ok: true }
   } catch {
@@ -363,6 +363,7 @@ export async function mockLogin(email, password, { firstName = '', lastName = ''
       mustChangePassword: false,
     }
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(session))
+    window.dispatchEvent(new Event(SESSION_UPDATED_EVENT))
     return { ok: true, session }
   }
 
@@ -431,6 +432,7 @@ export async function mockLogin(email, password, { firstName = '', lastName = ''
         mustChangePassword: true,
       }
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(session))
+      window.dispatchEvent(new Event(SESSION_UPDATED_EVENT))
       return { ok: true, session }
     }
 
@@ -456,6 +458,7 @@ export async function mockLogin(email, password, { firstName = '', lastName = ''
       mustChangePassword: credential.mustChangePassword !== false,
     }
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(session))
+    window.dispatchEvent(new Event(SESSION_UPDATED_EVENT))
     return { ok: true, session }
   } catch {
     return { ok: false, message: 'Account information could not be verified. Contact an administrator.' }
@@ -541,5 +544,6 @@ export function getSession() {
  */
 export function clearSession() {
   sessionStorage.removeItem(SESSION_KEY)
+  window.dispatchEvent(new Event(SESSION_UPDATED_EVENT))
 }
 import { hasPermission } from './rolePermissions'

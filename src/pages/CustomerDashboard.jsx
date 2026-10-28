@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   FileText, CheckCircle, CreditCard, AlertCircle,
   Eye, Wallet, FilePlus, User,
-  Activity, ShieldCheck, Clock,
+  Activity, ShieldCheck, Clock, UserRound, Settings as SettingsIcon,
 } from 'lucide-react'
 import { getSession } from '../services/mockAuth'
 import { getCustomerWorkspaceData, getSummary, formatGHS } from '../services/customerData'
+import { getSystemSettings, subscribeToSystemSettings } from '../services/systemSettings'
+import useCustomerPreferences from '../hooks/useCustomerPreferences'
+import { formatCustomerDate, formatCustomerTime } from '../services/customerPreferences'
 import './CustomerDashboard.css'
 
 // ── Status maps ───────────────────────────────────────────────────────────────
@@ -45,15 +48,45 @@ const categoryBadge = {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function formatDateTime(date) {
-  return (
-    date.toLocaleDateString('en-GB', {
-      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-    }) +
-    ' · ' +
-    date.toLocaleTimeString('en-GB', {
-      hour: '2-digit', minute: '2-digit', second: '2-digit',
+function getConfiguredTimeZone() {
+  try {
+    return { timeZone: getSystemSettings().timeZone, error: '' }
+  } catch (error) {
+    return {
+      timeZone: '',
+      error: error.message || 'Configured time zone is unavailable; using your browser time zone.',
+    }
+  }
+}
+
+function CustomerDateTime() {
+  const [now, setNow] = useState(() => new Date())
+  const [clockPreferences, setClockPreferences] = useState(getConfiguredTimeZone)
+  const { preferences } = useCustomerPreferences()
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 1000)
+    const unsubscribe = subscribeToSystemSettings((settings, error) => {
+      setClockPreferences(error
+        ? { timeZone: '', error: error.message || 'Configured time zone is unavailable; using your browser time zone.' }
+        : { timeZone: settings.timeZone, error: '' })
     })
+    return () => {
+      window.clearInterval(timer)
+      unsubscribe()
+    }
+  }, [])
+
+  return (
+    <span
+      className="cd-date"
+      aria-label="Today's date and time"
+      title={clockPreferences.error || `Time zone: ${clockPreferences.timeZone}`}
+    >
+      {formatCustomerDate(now, preferences, clockPreferences.timeZone)}
+      {' · '}
+      {formatCustomerTime(now, preferences, clockPreferences.timeZone)}
+    </span>
   )
 }
 
@@ -73,15 +106,10 @@ function EmptyState({ icon: Icon, message, action }) {
 
 export default function CustomerDashboard() {
   const session  = getSession()
+  const { preferences } = useCustomerPreferences()
   const navigate = useNavigate()
-  const [now, setNow] = useState(new Date())
   const { policies, payments, claims, recentActivity } = getCustomerWorkspaceData(session?.email)
   const summary  = getSummary({ policies, payments, claims })
-
-  useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 1000)
-    return () => clearInterval(timer)
-  }, [])
 
   const summaryCards = [
     { label: 'Total Policies',     value: summary.totalPolicies,    icon: FileText,    accent: '#8DB600' },
@@ -95,15 +123,33 @@ export default function CustomerDashboard() {
 
       {/* ── Welcome ── */}
       <header className="cd-header">
-        <div>
+        <div className="cd-header-welcome">
           <h1 className="cd-title">
             Welcome back, {session?.name ?? 'Customer'}
           </h1>
           <p className="cd-subtitle">Here is an overview of your insurance account.</p>
         </div>
-        <span className="cd-date" aria-label="Today's date and time" aria-live="polite">
-          {formatDateTime(now)}
-        </span>
+        <div className="cd-header-tools">
+          <CustomerDateTime />
+          <div className="cd-header-actions" aria-label="Account shortcuts">
+            <Link
+              to="/customer/profile"
+              className="cd-header-action"
+              aria-label="My Profile"
+              title="My Profile"
+            >
+              <UserRound size={19} aria-hidden="true" />
+            </Link>
+            <Link
+              to="/customer/settings"
+              className="cd-header-action"
+              aria-label="Settings"
+              title="Settings"
+            >
+              <SettingsIcon size={19} aria-hidden="true" />
+            </Link>
+          </div>
+        </div>
       </header>
 
       {/* ── Summary cards ── */}
@@ -159,8 +205,8 @@ export default function CustomerDashboard() {
                       </span>
                     </td>
                     <td className="cd-amount">{p.sumAssured}</td>
-                    <td className="cd-date-cell">{p.startDate}</td>
-                    <td className="cd-date-cell">{p.renewalDate}</td>
+                    <td className="cd-date-cell">{formatCustomerDate(p.startDate, preferences)}</td>
+                    <td className="cd-date-cell">{formatCustomerDate(p.renewalDate, preferences)}</td>
                     <td>
                       <span className={`cd-badge ${policyStatusBadge[p.status] ?? ''}`}>
                         {p.status}
@@ -205,7 +251,7 @@ export default function CustomerDashboard() {
                       <span className="cd-sub-ref">{row.policyId}</span>
                     </td>
                     <td className="cd-amount">{formatGHS(row.amount)}</td>
-                    <td className="cd-date-cell">{row.dueDate}</td>
+                    <td className="cd-date-cell">{formatCustomerDate(row.dueDate, preferences)}</td>
                     <td>
                       <span className={`cd-badge ${paymentStatusBadge[row.status] ?? ''}`}>
                         {row.status}
@@ -247,7 +293,7 @@ export default function CustomerDashboard() {
                     <td className="cd-mono">{row.ref}</td>
                     <td>{row.type}</td>
                     <td className="cd-mono">{row.policyId}</td>
-                    <td className="cd-date-cell">{row.submitted}</td>
+                    <td className="cd-date-cell">{formatCustomerDate(row.submitted, preferences)}</td>
                     <td>
                       <span className={`cd-badge ${claimStatusBadge[row.status] ?? ''}`}>
                         {row.status}
@@ -282,7 +328,7 @@ export default function CustomerDashboard() {
                       <span className="cd-mono">{item.ref}</span>
                       <span className="cd-activity-dot" aria-hidden="true">·</span>
                       <Clock size={11} aria-hidden="true" />
-                      {item.date}
+                      {formatCustomerDate(item.date, preferences)}
                     </span>
                   </div>
                 </div>

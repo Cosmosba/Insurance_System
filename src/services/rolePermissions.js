@@ -77,6 +77,7 @@ export const PERMISSION_CATALOG = [
   { id: 'reports.department.view', name: 'View department reports', description: 'View reports limited to authorised departments.', category: 'Reports', action: 'View department', implemented: false },
   { id: 'profile.view_own', name: 'View own profile', description: 'View the signed-in customer’s profile.', category: 'Customer Profile', action: 'View own', implemented: true },
   { id: 'profile.edit_own', name: 'Edit own profile', description: 'Edit the signed-in customer’s permitted profile fields.', category: 'Customer Profile', action: 'Edit own', implemented: true },
+  { id: 'settings.view_own', name: 'View own settings', description: 'Change personal appearance preferences.', category: 'System Settings', action: 'View own', implemented: true },
   { id: 'settings.manage', name: 'Manage system settings', description: 'Change organization settings and personal appearance preferences.', category: 'System Settings', action: 'Manage', implemented: true },
   { id: 'activity.view', name: 'View administrative activity', description: 'View recorded administrative activity.', category: 'Audit & Activity Logs', action: 'View', implemented: true },
 ]
@@ -102,6 +103,7 @@ const DEFAULT_ROLE_PERMISSIONS = {
     'claims.submit_own',
     'profile.view_own',
     'profile.edit_own',
+    'settings.view_own',
   ],
 }
 
@@ -135,6 +137,7 @@ const CUSTOMER_ONLY_PERMISSIONS = new Set([
   'claims.submit_own',
   'profile.view_own',
   'profile.edit_own',
+  'settings.view_own',
 ])
 
 export const SENSITIVE_PERMISSIONS = new Set([

@@ -429,11 +429,141 @@ body {
   .sa-table-wrap, .um-table-wrap, .cm-directory, .cm-table-wrap,
   .dm-table-wrap, .mp-table-wrap, .cl2-table-wrap, .py-table-wrap,
   .um-dialog, .cm-dialog, .login-card, .password-card,
-  .settings-header, .settings-section
+  .pf-card,
+  .settings-header, .settings-section,
+  .customer-settings-header, .customer-settings-section
 ) {
   border-color: var(--glass-outline);
   background: var(--glass-surface);
   box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+}
+
+:root[data-theme='night'] :is(.cd-activity-list, .cd-action-card) {
+  border-color: var(--glass-outline);
+  background: var(--glass-surface);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+  color: var(--color-charcoal);
+}
+
+:root[data-theme='night'] .pf-card {
+  border-color: var(--glass-outline);
+  background: var(--glass-surface);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+}
+
+:root[data-theme='night'] :is(.pf-read-row, .pf-field) {
+  border-color: var(--glass-outline);
+}
+
+:root[data-theme='night'] .pf-input {
+  border-color: var(--glass-outline);
+  background: var(--glass-surface-strong);
+  color: var(--color-charcoal);
+}
+
+:root[data-theme='night'] .pf-input--readonly {
+  background: var(--glass-surface-subtle);
+  color: var(--color-text-muted);
+}
+
+:root[data-theme='night'] :is(.pf-edit-btn, .pf-save-btn) {
+  color: #172000;
+}
+
+:root[data-theme='night'] .pf-avatar-upload-btn {
+  border-color: var(--glass-surface);
+  background: var(--color-primary);
+  color: #172000;
+}
+
+:root[data-theme='night'] .pf-status-badge--active {
+  background: rgba(166, 206, 36, 0.16);
+  color: #bedc62;
+}
+
+:root[data-theme='night'] .pf-status-badge--inactive {
+  background: rgba(170, 182, 164, 0.14);
+  color: var(--color-text);
+}
+
+:root[data-theme='night'] .pf-banner--success {
+  border-color: rgba(166, 206, 36, 0.28);
+  background: rgba(110, 145, 22, 0.16);
+  color: #c2e67a;
+}
+
+:root[data-theme='night'] .pf-banner--error {
+  border-color: rgba(255, 154, 145, 0.25);
+  background: rgba(155, 28, 28, 0.18);
+  color: #ffaaa1;
+}
+
+:root[data-theme='night'] :is(.pf-field-error, .pf-photo-err) {
+  color: #ff9a91;
+}
+
+:root[data-theme='night'] .pf-readonly-note {
+  border-color: var(--glass-outline);
+  background: var(--glass-surface-subtle);
+  color: var(--color-text-muted);
+}
+
+:root[data-theme='night'] .pf-action-bar {
+  border-color: var(--glass-outline);
+}
+
+:root[data-theme='night'] .pf-cancel-btn {
+  border-color: var(--glass-outline);
+  background: var(--glass-surface-strong);
+  color: var(--color-charcoal);
+}
+
+:root[data-theme='night'] .pf-cancel-btn:hover:not(:disabled) {
+  background: var(--glass-surface-subtle);
+}
+
+:root[data-theme='night'] .cd-activity-item {
+  border-color: var(--glass-outline);
+  color: var(--color-text);
+}
+
+:root[data-theme='night'] .cd-activity-item:hover,
+:root[data-theme='night'] .cd-action-card:hover {
+  background: var(--glass-surface-strong);
+}
+
+:root[data-theme='night'] .cd-action-card-label,
+:root[data-theme='night'] .cd-activity-event {
+  color: var(--color-charcoal);
+}
+
+:root[data-theme='night'] .cd-activity-meta,
+:root[data-theme='night'] .cd-action-card-soon {
+  color: var(--color-text-muted);
+}
+
+:root[data-theme='night'] .cd-action-card-soon {
+  background: var(--glass-surface-subtle);
+}
+
+:root[data-theme='night'] :is(.cd-activity-icon--payment, .cd-action-card-icon--amber) {
+  background: rgba(192, 132, 42, 0.18);
+  color: #f0bd76;
+}
+
+:root[data-theme='night'] :is(.cd-activity-icon--claim, .cd-action-card-icon--purple) {
+  background: rgba(123, 94, 167, 0.2);
+  color: #c5a9ed;
+}
+
+:root[data-theme='night'] :is(.cd-activity-icon--policy, .cd-action-card-icon--green) {
+  background: rgba(166, 206, 36, 0.16);
+  color: #bedc62;
+}
+
+:root[data-theme='night'] :is(.cd-activity-icon--profile, .cd-action-card-icon--teal) {
+  background: rgba(49, 143, 107, 0.2);
+  color: #87d7b1;
 }
 
 :root[data-theme='night'] :is(
@@ -497,6 +627,33 @@ body {
   border-color: var(--glass-outline);
   background: var(--glass-surface-strong);
   color: var(--color-charcoal);
+}
+
+:root[data-theme='night'] .cd-header-action {
+  border-color: var(--glass-outline);
+  background: var(--glass-surface);
+  color: var(--color-primary-dark);
+}
+
+:root[data-theme='night'] .cd-header-action:hover {
+  background: var(--glass-surface-strong);
+  color: var(--color-primary);
+}
+
+:root[data-theme='night'] .customer-settings-note {
+  color: var(--color-text-muted);
+}
+
+:root[data-theme='night'] .settings-message--success {
+  color: #a8d87a;
+}
+
+:root[data-theme='night'] .settings-message--warning {
+  color: #f0cb72;
+}
+
+:root[data-theme='night'] .settings-message--error {
+  color: #ff9a91;
 }
 
 :root[data-theme='night'] .settings-info-panel,

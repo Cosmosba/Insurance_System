@@ -14,6 +14,7 @@ import MyClaims from './pages/MyClaims'
 import ClaimDetail from './pages/ClaimDetail'
 import NewClaim from './pages/NewClaim'
 import MyProfile from './pages/MyProfile'
+import CustomerSettings from './pages/CustomerSettings'
 import SuperadminLayout from './layouts/SuperadminLayout'
 import SuperadminDashboard from './pages/admin/SuperadminDashboard'
 import DepartmentsManagement from './pages/admin/DepartmentsManagement'
@@ -150,6 +151,17 @@ export default function App() {
             <ProtectedRoute requiredRole="customer" requiredPermission="profile.view_own">
               <CustomerLayout>
                 <MyProfile />
+              </CustomerLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/customer/settings"
+          element={
+            <ProtectedRoute requiredRole="customer" requiredPermission="settings.view_own">
+              <CustomerLayout>
+                <CustomerSettings />
               </CustomerLayout>
             </ProtectedRoute>
           }

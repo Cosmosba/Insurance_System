@@ -2,6 +2,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ShieldCheck, Download, AlertTriangle } from 'lucide-react'
 import { getSession } from '../services/mockAuth'
 import { getCustomerWorkspaceData, formatGHS } from '../services/customerData'
+import useCustomerPreferences from '../hooks/useCustomerPreferences'
+import { formatCustomerDate } from '../services/customerPreferences'
 import './MyPolicies.css'
 
 const policyStatusBadge = {
@@ -42,6 +44,7 @@ function DetailRow({ label, value }) {
 export default function PolicyDetail() {
   const { id }   = useParams()
   const navigate = useNavigate()
+  const { preferences } = useCustomerPreferences()
   const { policies, payments, claims } = getCustomerWorkspaceData(getSession()?.email)
   const policy   = policies.find(p => p.id === id)
 
@@ -103,8 +106,8 @@ export default function PolicyDetail() {
               </span>
             } />
             <DetailRow label="Policyholder"     value={policy.policyholder} />
-            <DetailRow label="Start Date"       value={policy.startDate} />
-            <DetailRow label="Renewal Date"     value={policy.renewalDate} />
+            <DetailRow label="Start Date"       value={formatCustomerDate(policy.startDate, preferences)} />
+            <DetailRow label="Renewal Date"     value={formatCustomerDate(policy.renewalDate, preferences)} />
             <DetailRow label="Sum Assured"      value={policy.sumAssured} />
             <DetailRow label="Premium"          value={policy.premium} />
             <DetailRow label="Payment Frequency" value={policy.frequency} />
@@ -158,7 +161,7 @@ export default function PolicyDetail() {
                   <tr key={row.ref}>
                     <td className="mp-mono">{row.ref}</td>
                     <td className="mp-amount">{formatGHS(row.amount)}</td>
-                    <td className="mp-date-cell">{row.dueDate}</td>
+                    <td className="mp-date-cell">{formatCustomerDate(row.dueDate, preferences)}</td>
                     <td>
                       <span className={`mp-badge ${paymentStatusBadge[row.status] ?? ''}`}>
                         {row.status}
@@ -195,7 +198,7 @@ export default function PolicyDetail() {
                   <tr key={row.ref}>
                     <td className="mp-mono">{row.ref}</td>
                     <td>{row.type}</td>
-                    <td className="mp-date-cell">{row.submitted}</td>
+                    <td className="mp-date-cell">{formatCustomerDate(row.submitted, preferences)}</td>
                     <td>
                       <span className={`mp-badge ${claimStatusBadge[row.status] ?? ''}`}>
                         {row.status}

@@ -6,6 +6,8 @@ import {
 } from 'lucide-react'
 import { getSession } from '../services/mockAuth'
 import { getCustomerWorkspaceData, getClaimSummary, formatGHS } from '../services/customerData'
+import useCustomerPreferences from '../hooks/useCustomerPreferences'
+import { formatCustomerDate } from '../services/customerPreferences'
 import './MyClaims.css'
 
 const STATUS_FILTERS = ['All', 'Under Review', 'Approved', 'Rejected', 'Completed']
@@ -21,6 +23,7 @@ const statusBadge = {
 
 export default function MyClaims() {
   const navigate = useNavigate()
+  const { preferences } = useCustomerPreferences()
   const { claims } = getCustomerWorkspaceData(getSession()?.email)
   const summary  = getClaimSummary(claims)
   const [search, setSearch] = useState('')
@@ -167,8 +170,8 @@ export default function MyClaims() {
                     <td className="cl2-amount">
                       {c.amount != null ? formatGHS(c.amount) : '—'}
                     </td>
-                    <td className="cl2-date-cell">{c.submitted}</td>
-                    <td className="cl2-date-cell">{c.lastUpdated ?? '—'}</td>
+                    <td className="cl2-date-cell">{formatCustomerDate(c.submitted, preferences)}</td>
+                    <td className="cl2-date-cell">{c.lastUpdated ? formatCustomerDate(c.lastUpdated, preferences) : '—'}</td>
                     <td>
                       <span className={`cl2-badge ${statusBadge[c.status] ?? ''}`}>{c.status}</span>
                     </td>

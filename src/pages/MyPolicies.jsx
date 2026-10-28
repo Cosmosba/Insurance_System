@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { FileText, CheckCircle, Clock, XCircle, Search, ShieldCheck, ChevronRight } from 'lucide-react'
 import { getSession } from '../services/mockAuth'
 import { getCustomerWorkspaceData, getPolicySummary } from '../services/customerData'
+import useCustomerPreferences from '../hooks/useCustomerPreferences'
+import { formatCustomerDate } from '../services/customerPreferences'
 import './MyPolicies.css'
 
 const STATUS_FILTERS = ['All', 'Active', 'Pending', 'Lapsed']
@@ -22,6 +24,7 @@ const categoryBadge = {
 
 export default function MyPolicies() {
   const navigate = useNavigate()
+  const { preferences } = useCustomerPreferences()
   const { policies } = getCustomerWorkspaceData(getSession()?.email)
   const summary  = getPolicySummary(policies)
   const [search, setSearch]   = useState('')
@@ -159,8 +162,8 @@ export default function MyPolicies() {
                       </span>
                     </td>
                     <td>{p.policyholder}</td>
-                    <td className="mp-date-cell">{p.startDate}</td>
-                    <td className="mp-date-cell">{p.renewalDate}</td>
+                    <td className="mp-date-cell">{formatCustomerDate(p.startDate, preferences)}</td>
+                    <td className="mp-date-cell">{formatCustomerDate(p.renewalDate, preferences)}</td>
                     <td>
                       <span className={`mp-badge ${policyStatusBadge[p.status] ?? ''}`}>
                         {p.status}

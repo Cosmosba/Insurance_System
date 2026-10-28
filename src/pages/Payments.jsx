@@ -6,6 +6,8 @@ import {
 } from 'lucide-react'
 import { getSession } from '../services/mockAuth'
 import { getCustomerWorkspaceData, getPaymentSummary, formatGHS } from '../services/customerData'
+import useCustomerPreferences from '../hooks/useCustomerPreferences'
+import { formatCustomerDate } from '../services/customerPreferences'
 import './Payments.css'
 
 const STATUS_FILTERS = ['All', 'Paid', 'Due Soon', 'Upcoming', 'Overdue']
@@ -20,6 +22,7 @@ const statusBadge = {
 
 export default function Payments() {
   const navigate = useNavigate()
+  const { preferences } = useCustomerPreferences()
   const { payments } = getCustomerWorkspaceData(getSession()?.email)
   const summary  = getPaymentSummary(payments)
   const [search, setSearch] = useState('')
@@ -131,7 +134,7 @@ export default function Payments() {
                 </div>
                 <div className="py-upcoming-right">
                   <span className="py-upcoming-amount">{formatGHS(p.amount)}</span>
-                  <span className="py-upcoming-due">Due {p.dueDate}</span>
+                  <span className="py-upcoming-due">Due {formatCustomerDate(p.dueDate, preferences)}</span>
                 </div>
                 <span className={`py-badge ${statusBadge[p.status] ?? ''}`}>{p.status}</span>
                 <button
@@ -225,8 +228,8 @@ export default function Payments() {
                     </td>
                     <td className="py-date-cell">{p.period}</td>
                     <td className="py-amount">{formatGHS(p.amount)}</td>
-                    <td className="py-date-cell">{p.dueDate}</td>
-                    <td className="py-date-cell">{p.paidDate ?? '—'}</td>
+                    <td className="py-date-cell">{formatCustomerDate(p.dueDate, preferences)}</td>
+                    <td className="py-date-cell">{p.paidDate ? formatCustomerDate(p.paidDate, preferences) : '—'}</td>
                     <td className="py-method">{p.method ?? '—'}</td>
                     <td>
                       <span className={`py-badge ${statusBadge[p.status] ?? ''}`}>{p.status}</span>

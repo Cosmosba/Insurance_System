@@ -2,6 +2,8 @@ import { useState, useRef } from 'react'
 import { User, Mail, Phone, MapPin, Shield, Pencil, X, Check, AlertCircle, Camera } from 'lucide-react'
 import { getProfile, saveProfile, getPhoto, savePhoto, getSession } from '../services/mockAuth'
 import { hasPermission } from '../services/rolePermissions'
+import useCustomerPreferences from '../hooks/useCustomerPreferences'
+import { formatCustomerDate } from '../services/customerPreferences'
 import './MyProfile.css'
 
 // ── Validation helpers ────────────────────────────────────────────────────────
@@ -65,6 +67,7 @@ function Field({ id, label, value, onChange, error, type = 'text', readOnly = fa
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function MyProfile() {
+  const { preferences } = useCustomerPreferences()
   const [profile,  setProfile]  = useState(() => getProfile())
   const [photo,    setPhoto]    = useState(() => getPhoto())
   const [editing,  setEditing]  = useState(false)
@@ -272,7 +275,7 @@ export default function MyProfile() {
               />
               <Field
                 id="pf-dob" label="Date of Birth"
-                value={profile.dateOfBirth} readOnly
+                value={formatCustomerDate(profile.dateOfBirth, preferences)} readOnly
               />
               <Field
                 id="pf-gender" label="Gender"
@@ -283,7 +286,7 @@ export default function MyProfile() {
             <div className="pf-read-grid">
               <ReadRow label="First Name"    value={profile.firstName}   icon={User} />
               <ReadRow label="Last Name"     value={profile.lastName}    icon={User} />
-              <ReadRow label="Date of Birth" value={profile.dateOfBirth} icon={Shield} />
+              <ReadRow label="Date of Birth" value={formatCustomerDate(profile.dateOfBirth, preferences)} icon={Shield} />
               <ReadRow label="Gender"        value={profile.gender}      icon={User} />
             </div>
           )}
@@ -334,7 +337,7 @@ export default function MyProfile() {
           <div className="pf-read-grid">
             <ReadRow label="Customer Reference" value={profile.customerId}   icon={Shield} />
             <ReadRow label="Account Status"     value={profile.accountStatus} icon={Shield} />
-            <ReadRow label="Member Since"       value={profile.accountSince}  icon={Shield} />
+            <ReadRow label="Member Since"       value={formatCustomerDate(profile.accountSince, preferences)} icon={Shield} />
             <ReadRow label="Email Address"      value={profile.email}         icon={Mail} />
           </div>
           <p className="pf-readonly-note">
